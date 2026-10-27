@@ -1,0 +1,41 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}{{ product_request.number }} — FINDER{% endblock %}
+{% block brand_styles %}<link rel="stylesheet" href="{% static 'shop/product_request/product_request.css' %}?v=20260918-1">{% endblock %}
+
+{% block content %}
+<div class="page-width request-detail-page">
+    <nav class="breadcrumbs"><a href="{% url 'shop:home' %}">Главная</a><span>/</span><a href="{% url 'shop:orders' %}">Мои заказы</a><span>/</span><span>{{ product_request.number }}</span></nav>
+    <header class="request-detail-heading">
+        <div><p class="request-kicker">Персональный заказ</p><h1>{{ product_request.number }}</h1><span>от {{ product_request.created_at|date:'d.m.Y, H:i' }}</span></div>
+        <b class="request-status status-{{ product_request.status }}">{{ product_request.get_status_display }}</b>
+    </header>
+    <div class="request-detail-grid">
+        <section class="request-detail-items">
+            <h2>Товары в заявке</h2>
+            {% for item in product_request.items.all %}
+            <article>
+                <span>{{ forloop.counter|stringformat:'02d' }}</span>
+                <div>
+                    <small>{{ item.brand }}</small>
+                    <h3>{{ item.product_name }}</h3>
+                    <p class="request-item-attributes">
+                        {% if item.article %}<span><b>Артикул:</b> {{ item.article }}</span>{% endif %}
+                        {% if item.color %}<span><b>Цвет:</b> {{ item.color }}</span>{% endif %}
+                        {% if item.size %}<span><b>Размер:</b> {{ item.size }}</span>{% endif %}
+                        {% if not item.article and not item.color and not item.size %}Без дополнительных уточнений{% endif %}
+                    </p>
+                </div>
+            </article>
+            {% endfor %}
+        </section>
+        <aside class="request-detail-side">
+            <div><h2>Контакты</h2><p>{{ product_request.customer_name }}</p><a href="mailto:{{ product_request.customer_email }}">{{ product_request.customer_email }}</a><a href="tel:{{ product_request.customer_phone }}">{{ product_request.customer_phone }}</a>{% if product_request.customer_telegram %}<span>{{ product_request.customer_telegram }}</span>{% endif %}</div>
+            <p class="request-detail-note">Менеджер уточнит наличие, стоимость и сроки. Заказ не является оплатой или обязательством купить товар до подтверждения финальных условий.</p>
+            <a class="button button-dark" href="{% url 'shop:product_request_create' %}">Создать ещё заказ</a>
+            <a class="button button-outline" href="{% url 'shop:orders' %}">Все мои заказы</a>
+        </aside>
+    </div>
+</div>
+{% endblock %}

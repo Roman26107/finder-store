@@ -1,0 +1,28 @@
+{% load shop_tags %}
+<section class="analytics-kpis analytics-kpis-five" aria-label="Показатели маркетинга">
+    <article><small>Расход</small><b>{{ total_spend|money }} ₽</b><span>Реклама</span></article>
+    <article><small>Посетители</small><b>{{ unique_visitors }}</b><span>{{ session_count }} сессий</span></article>
+    <article><small>Лиды</small><b>{{ lead_count }}</b><span>CR {{ lead_cr }}%</span></article>
+    <article><small>CPL</small><b>{% if cpl is not None %}{{ cpl|money }} ₽{% else %}—{% endif %}</b><span>Стоимость лида</span></article>
+    <article><small>Продажи</small><b>{{ order_count }}</b><span>Оплаченные</span></article>
+    <article><small>CAC</small><b>{% if cac is not None %}{{ cac|money }} ₽{% else %}—{% endif %}</b><span>Стоимость клиента</span></article>
+    <article><small>Выручка</small><b>{{ revenue|money }} ₽</b><span>Last touch</span></article>
+    <article><small>ROAS</small><b>{% if roas is not None %}{{ roas|stringformat:'.2f' }}×{% else %}—{% endif %}</b><span>Выручка / расход</span></article>
+    <article><small>Прибыль</small><b>{% if profit_after_ads is not None %}{{ profit_after_ads|money }} ₽{% else %}—{% endif %}</b><span>После рекламы</span></article>
+</section>
+
+<section class="control-panel">
+    <div class="panel-heading"><div><span>Last-touch атрибуция</span><h2>Источник → кампания</h2><p>Нажмите на строку детализации, чтобы увидеть content и ad_id.</p></div></div>
+    <div class="analytics-table"><table data-sortable-table><thead><tr><th>Источник / кампания</th><th>Расход</th><th>Visitors</th><th>Leads</th><th>CR</th><th>CPL</th><th>Orders</th><th>CAC</th><th>Revenue</th><th>ROAS</th><th>Profit</th></tr></thead><tbody>
+        {% for row in marketing_report %}<tr><td>{{ row.source }}<small>{{ row.campaign|default:'Без кампании' }}</small></td><td>{{ row.spend|money }} ₽</td><td>{{ row.visitors }}</td><td>{{ row.leads }}</td><td>{{ row.cr }}%</td><td>{% if row.cpl is not None %}{{ row.cpl|money }} ₽{% else %}—{% endif %}</td><td>{{ row.orders }}</td><td>{% if row.cac is not None %}{{ row.cac|money }} ₽{% else %}—{% endif %}</td><td>{{ row.revenue|money }} ₽</td><td>{% if row.roas is not None %}{{ row.roas|stringformat:'.2f' }}×{% else %}—{% endif %}</td><td>{% if row.profit is not None %}{{ row.profit|money }} ₽{% else %}—{% endif %}</td></tr>
+        <tr class="analytics-detail-row"><td colspan="11"><details><summary>Объявления {{ row.source }} / {{ row.campaign|default:'без кампании' }}</summary><div class="analytics-table"><table><thead><tr><th>Content / ad_id</th><th>Visitors</th><th>Leads</th><th>Orders</th><th>Spend</th><th>Revenue</th><th>ROAS</th></tr></thead><tbody>{% for detail in row.details %}<tr><td>{{ detail.content|default:'—' }}<small>{{ detail.ad_id|default:'—' }}</small></td><td>{{ detail.visitors }}</td><td>{{ detail.leads }}</td><td>{{ detail.sales }}</td><td>{{ detail.spend|money }} ₽</td><td>{{ detail.revenue|money }} ₽</td><td>{% if detail.roas is not None %}{{ detail.roas|stringformat:'.2f' }}×{% else %}—{% endif %}</td></tr>{% empty %}<tr><td colspan="7">Детализации пока нет.</td></tr>{% endfor %}</tbody></table></div></details></td></tr>
+        {% empty %}<tr><td colspan="11">Данных по привлечению пока нет.</td></tr>{% endfor %}
+    </tbody></table></div>
+</section>
+
+<details class="control-panel analytics-disclosure"><summary><span>Атрибуция</span><b>First touch и UTM</b><i>Раскрыть →</i></summary><div class="analytics-table"><table data-sortable-table><thead><tr><th>Источник / кампания</th><th>Content / ad_id</th><th>Лиды</th><th>Продажи</th><th>Выручка</th></tr></thead><tbody>{% for row in first_touch_report %}<tr><td>{{ row.source }}<small>{{ row.campaign|default:'Без кампании' }}</small></td><td>{{ row.content|default:'—' }}<small>{{ row.ad_id|default:'—' }}</small></td><td>{{ row.leads }}</td><td>{{ row.sales }}</td><td>{{ row.revenue|money }} ₽</td></tr>{% empty %}<tr><td colspan="5">Данных пока нет.</td></tr>{% endfor %}</tbody></table></div></details>
+
+<div class="analytics-columns">
+    <details class="control-panel analytics-disclosure"><summary><span>Бюджет</span><b>Последние расходы</b><i>Раскрыть →</i></summary><div class="analytics-table"><table><thead><tr><th>Период</th><th>Кампания</th><th>Учтено</th><th>Всего</th></tr></thead><tbody>{% for spend in spends %}<tr><td>{{ spend.period_start|date:'d.m' }}–{{ spend.period_end|date:'d.m.Y' }}</td><td>{{ spend.source }} / {{ spend.campaign|default:'—' }}</td><td>{{ spend.allocated_amount|money }} ₽</td><td>{{ spend.amount|money }} ₽</td></tr>{% empty %}<tr><td colspan="4">Расходы не внесены.</td></tr>{% endfor %}</tbody></table></div></details>
+    <details class="control-panel analytics-disclosure"><summary><span>Рекламный бюджет</span><b>Добавить расход</b><i>Раскрыть →</i></summary><form method="post" class="form-grid analytics-spend-form">{% csrf_token %}{% for field in spend_form %}<label><span>{{ field.label }}</span>{{ field }}{% if field.errors %}<em>{{ field.errors|striptags }}</em>{% endif %}</label>{% endfor %}<button class="control-button dark" type="submit">Сохранить расход</button></form></details>
+</div>

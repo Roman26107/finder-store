@@ -1,0 +1,20 @@
+{% load shop_tags %}
+<div class="quick-view-grid" data-quick-view-product="{{ product.pk }}">
+    <div class="quick-view-gallery" data-quick-gallery>
+        <div class="quick-view-images">
+            {% with primary=product.primary_image %}{% if primary and primary.product_page_url %}{% for image in product.images.all %}{% if image.product_page_url %}<img class="quick-view-image{% if image.pk == primary.pk %} active{% endif %}" src="{{ image.product_page_url }}" alt="{{ product.title }} — фото {{ forloop.counter }}"{% if image.pk != primary.pk %} hidden{% endif %} data-quick-image>{% endif %}{% endfor %}{% else %}<span class="image-placeholder">A</span>{% endif %}{% endwith %}
+        </div>
+        {% if product.images.all|length > 1 %}<div class="quick-view-dots">{% with primary=product.primary_image %}{% for image in product.images.all %}{% if image.product_page_url %}<button class="{% if image.pk == primary.pk %}active{% endif %}" type="button" aria-label="Фото {{ forloop.counter }}" data-quick-dot></button>{% endif %}{% endfor %}{% endwith %}</div>{% endif %}
+    </div>
+    <div class="quick-view-info">
+        <div><small>{{ product.catalog_brand_name|default:product.brand }}</small><h3>{{ product.title }}</h3></div>
+        <strong>{% if product.display_price is not None %}{{ product.display_price|money }} ₽{% else %}Цена уточняется{% endif %}</strong>
+        <form method="post" action="{% url 'shop:cart_add' product.pk %}" class="quick-order-form">{% csrf_token %}
+            {% if available_sizes %}<div><span class="quick-label">Размер</span><div class="quick-sizes" role="radiogroup">{% for size in available_sizes %}<label><input type="radio" name="size_sku" value="{{ size.sku }}"{% if selected_size.pk == size.pk or not selected_size and forloop.first %} checked{% endif %}><span>{{ size.size }}</span></label>{% endfor %}</div></div>{% else %}<span class="quick-label">Один размер</span>{% endif %}
+            <button class="button button-dark" type="submit"{% if product.display_price is None %} disabled{% endif %}>Добавить в корзину</button>
+        </form>
+        <form method="post" action="{% url 'shop:favorite_toggle' product.pk %}" data-favorite-form data-product-id="{{ product.pk }}">{% csrf_token %}<input type="hidden" name="next" value="{{ product.get_absolute_url }}"><button class="button button-outline favorite-wide{% if product.pk in favorite_ids %} active{% endif %}" type="submit" data-favorite-button aria-pressed="{% if product.pk in favorite_ids %}true{% else %}false{% endif %}"><svg aria-hidden="true"><use href="#icon-heart"></use></svg><span data-favorite-label>{% if product.pk in favorite_ids %}Удалить из избранного{% else %}Добавить в избранное{% endif %}</span></button></form>
+        <a class="quick-detail-link" href="{{ product.get_absolute_url }}">Подробнее о товаре →</a>
+        <p>Доставка из бутика. Сроки и стоимость рассчитаем при оформлении.</p>
+    </div>
+</div>

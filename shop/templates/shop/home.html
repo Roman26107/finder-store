@@ -1,0 +1,116 @@
+{% extends 'shop/base.html' %}
+{% load static shop_tags %}
+{% block title %}FINDER — новая коллекция{% endblock %}
+{% block content %}
+<div class="home-page">
+<section class="hero{% if not hero_slides %} hero-empty{% endif %}"{% if hero_slides %} data-hero-slider data-hero-interval="{{ fall_banner.interval_seconds }}000" data-hero-autoplay="{% if fall_banner.autoplay %}true{% else %}false{% endif %}"{% endif %}>
+    <div class="hero-copy">
+        <p>Новая коллекция</p>
+        <h1>Осень-зима<br>2026</h1>
+        <span class="hero-subtitle">Современная классика<br>в новом сезоне</span>
+        <a class="button button-outline" href="{% url 'shop:catalog' %}?collection=fall-winter{% if preferred_gender %}&amp;gender={{ preferred_gender }}{% endif %}">Смотреть коллекцию <span aria-hidden="true">→</span></a>
+        <span class="hero-signature">FINDER <small>A world of curated luxury</small></span>
+    </div>
+    {% if hero_slides %}
+        <div class="hero-slides">
+            {% for image in hero_slides %}
+                <img class="hero-slide{% if forloop.first %} active{% endif %}" src="{{ image.banner_url }}" alt="{% if image.effective_alt %}{{ image.effective_alt }}{% else %}{{ image.alt|default:image.product.title }}{% endif %}" decoding="async"{% if forloop.first %} fetchpriority="high"{% else %} loading="lazy" aria-hidden="true"{% endif %} data-hero-slide>
+            {% endfor %}
+        </div>
+        {% if hero_slides|length > 1 %}
+            <div class="hero-arrows" aria-label="Управление слайдером">
+                <button type="button" aria-label="Предыдущий слайд" data-hero-prev><span aria-hidden="true">←</span></button>
+                <button type="button" aria-label="Следующий слайд" data-hero-next><span aria-hidden="true">→</span></button>
+            </div>
+            <div class="hero-dots" aria-label="Фотографии коллекции">
+                {% for image in hero_slides %}<button class="{% if forloop.first %}active{% endif %}" type="button" aria-label="Показать фото {{ forloop.counter }} из {{ hero_slides|length }}"{% if forloop.first %} aria-current="true"{% endif %} data-hero-dot></button>{% endfor %}
+            </div>
+        {% endif %}
+    {% endif %}
+</section>
+
+<section class="section home-products page-width">
+    <div class="section-heading"><div><h2>Из бутиков мира</h2><p>Коллекции из зарубежных бутиков с доставкой для вас</p></div><a href="{% url 'shop:catalog' %}?collection=new{% if preferred_gender %}&amp;gender={{ preferred_gender }}{% endif %}">Смотреть все <span aria-hidden="true">→</span></a></div>
+    {% if products %}
+        <div class="product-carousel" data-product-carousel>
+            <button class="product-carousel-button product-carousel-prev" type="button" aria-label="Предыдущие новинки" data-product-carousel-prev><span aria-hidden="true">‹</span></button>
+            <div class="product-grid product-grid-four" data-product-carousel-track>{% for product in products %}{% include 'shop/includes/product_card.html' %}{% endfor %}</div>
+            <button class="product-carousel-button product-carousel-next" type="button" aria-label="Следующие новинки" data-product-carousel-next><span aria-hidden="true">›</span></button>
+        </div>
+    {% else %}
+        <div class="empty-state"><h2>Каталог готов к наполнению</h2><p>Импортируйте JSON-карточки через административную панель.</p><a class="button button-dark" href="{% url 'admin:shop_product_import' %}">Импортировать товары</a></div>
+    {% endif %}
+</section>
+
+<section class="bags-banner{% if bag_slides %} has-images{% endif %}"{% if bag_slides %} data-hero-slider data-hero-interval="{{ bags_banner.interval_seconds }}000" data-hero-autoplay="{% if bags_banner.autoplay %}true{% else %}false{% endif %}"{% endif %}>
+    <div class="bags-visual">
+        {% for image in bag_slides %}<img class="bag-slide{% if forloop.first %} active{% endif %}" src="{{ image.banner_url }}" alt="{% if image.effective_alt %}{{ image.effective_alt }}{% else %}{{ image.alt|default:image.product.title }}{% endif %}" loading="lazy" decoding="async"{% if not forloop.first %} aria-hidden="true"{% endif %} data-hero-slide>{% endfor %}
+    </div>
+    <div class="bags-copy"><h2>Сумки</h2><p>Искусство в каждой детали</p><a class="button button-outline" href="{% url 'shop:catalog' %}?category=bags">Смотреть коллекцию <span aria-hidden="true">→</span></a></div>
+    {% if bag_slides|length > 1 %}<div class="hero-dots" aria-label="Фотографии баннера сумок">{% for image in bag_slides %}<button class="{% if forloop.first %}active{% endif %}" type="button" aria-label="Показать фото {{ forloop.counter }} из {{ bag_slides|length }}"{% if forloop.first %} aria-current="true"{% endif %} data-hero-dot></button>{% endfor %}</div>{% endif %}
+</section>
+
+{% if not weekly_look or weekly_look.is_visible %}
+<section class="section selection-section page-width">
+    <div class="section-heading"><div><p class="weekly-look-kicker">FINDER edit</p><h2>{{ weekly_look.title|default:'Образ недели' }}</h2><p>{{ weekly_look.description|default:'Готовая подборка вещей, которые работают вместе.' }}</p></div><a href="{% url 'shop:catalog' %}">Смотреть все <span aria-hidden="true">→</span></a></div>
+    {% if weekly_look_entries %}<div class="weekly-look" data-weekly-look><div class="weekly-look-stage">
+        {% for entry in weekly_look_entries %}{% with product=entry.catalog_image.product|default:entry %}<a class="weekly-look-piece piece-{{ forloop.counter }}" href="{{ product.get_absolute_url }}" aria-label="{{ product.title }}">{% with image=product.primary_image %}{% if entry.image_url %}<img src="{{ entry.image_url }}" alt="" loading="lazy" decoding="async">{% elif image and image.preview_url %}<img src="{{ image.preview_url }}" alt="" loading="lazy" decoding="async">{% else %}<span class="image-placeholder">A</span>{% endif %}{% endwith %}</a><button class="weekly-look-hotspot hotspot-{{ forloop.counter }}" type="button" aria-label="Показать {{ product.title }}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}" data-look-index="{{ forloop.counter0 }}"></button>{% endwith %}{% endfor %}
+        <div class="weekly-look-popover" data-look-popover>{% with product=weekly_look_entries.0.catalog_image.product|default:weekly_look_entries.0 %}<small>{{ product.catalog_brand_name|default:product.brand }}</small><b>{{ product.title }}</b><strong>{% if product.display_price is not None %}{{ product.display_price|money }} ₽{% else %}Цена уточняется{% endif %}</strong><a href="{{ product.get_absolute_url }}">Смотреть вещь</a>{% endwith %}</div>
+    </div><div class="weekly-look-info"><p class="weekly-look-kicker">FINDER styling</p><h3>{{ weekly_look.headline|default:'Тихая роскошь. Четыре акцента.' }}</h3><p>{{ weekly_look.text|default:'Выберите точку на образе или вещь в списке, чтобы рассмотреть подборку.' }}</p><ol>{% for entry in weekly_look_entries %}{% with product=entry.catalog_image.product|default:entry %}<li><button type="button" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" data-look-index="{{ forloop.counter0 }}" data-brand="{{ product.catalog_brand_name|default:product.brand }}" data-title="{{ product.title }}" data-price="{% if product.display_price is not None %}{{ product.display_price|money }} ₽{% else %}Цена уточняется{% endif %}" data-url="{{ product.get_absolute_url }}"><span>{{ product.title }}</span><b>{% if product.display_price is not None %}{{ product.display_price|money }} ₽{% else %}—{% endif %}</b></button></li>{% endwith %}{% endfor %}</ol></div></div>{% endif %}
+</section>
+{% endif %}
+
+<section class="section finder-selection-section page-width">
+    <div class="section-heading"><div><p class="weekly-look-kicker">Curated by FINDER</p><h2>FINDER Selection</h2><p>Редкие вещи и точные акценты, отобранные редакцией.</p></div><a href="{% url 'shop:catalog' %}?collection=new">Смотреть все <span aria-hidden="true">→</span></a></div>
+    {% if selection_products %}<div class="product-carousel" data-product-carousel><button class="product-carousel-button product-carousel-prev" type="button" aria-label="Предыдущие товары FINDER Selection" data-product-carousel-prev><span aria-hidden="true">‹</span></button><div class="product-grid product-grid-four" data-product-carousel-track>{% for product in selection_products %}{% include 'shop/includes/product_card.html' %}{% endfor %}</div><button class="product-carousel-button product-carousel-next" type="button" aria-label="Следующие товары FINDER Selection" data-product-carousel-next><span aria-hidden="true">›</span></button></div>{% endif %}
+</section>
+
+<section class="category-mosaic" aria-label="Коллекции для женщин, мужчин и аксессуары">
+    <div class="category-stack">
+        <a class="category-banner category-women" href="{% url 'shop:catalog' %}?gender=women">
+            {% if women_promo and women_promo.primary_image %}<img src="{{ women_promo.primary_image.banner_url }}" alt="Женская коллекция" loading="lazy" decoding="async">{% endif %}
+            <span><strong>Женское</strong><small>Новая коллекция</small><i aria-hidden="true">→</i></span>
+        </a>
+        <a class="category-banner category-men" href="{% url 'shop:catalog' %}?gender=men">
+            {% if men_promo and men_promo.primary_image %}<img src="{{ men_promo.primary_image.banner_url }}" alt="Мужская коллекция" loading="lazy" decoding="async">{% endif %}
+            <span><strong>Мужское</strong><small>Новая коллекция</small><i aria-hidden="true">→</i></span>
+        </a>
+    </div>
+    <a class="category-banner category-accessories" href="{% url 'shop:catalog' %}?category=accessories">
+        {% if accessory_promo and accessory_promo.primary_image %}<img src="{{ accessory_promo.primary_image.banner_url }}" alt="Аксессуары" loading="lazy" decoding="async">{% endif %}
+        <span><strong>Аксессуары</strong><small>Сумки и детали образа</small><i aria-hidden="true">→</i></span>
+    </a>
+</section>
+
+<a class="personal-order-banner" href="{% url 'shop:product_request_create' %}" aria-labelledby="personal-order-title">
+    <img src="{% static 'shop/images/personal-order-banner.webp' %}" alt="Чёрная сумка на каменном постаменте" loading="lazy" decoding="async">
+    <div class="personal-order-copy">
+        <p>Персональный заказ</p>
+        <h2 id="personal-order-title">Заказать</h2>
+        <span class="personal-order-description">Не нашли нужную вещь?<br>Найдём её в бутиках мира и доставим для вас.</span>
+        <span class="button button-outline">Оставить заявку <i aria-hidden="true">→</i></span>
+        <small>FINDER <b>A world of curated luxury</b></small>
+    </div>
+    <ul class="personal-order-cities" aria-hidden="true">
+        <li>New York</li><li>Paris</li><li>Milan</li><li>London</li><li>Dubai</li><li>Tokyo</li>
+    </ul>
+</a>
+
+{% if telegram_public_url %}
+<section class="telegram-editorial page-width" aria-labelledby="telegram-editorial-title">
+    <div class="telegram-editorial-visual">
+        <span class="telegram-orbit telegram-orbit-one" aria-hidden="true"></span>
+        <span class="telegram-orbit telegram-orbit-two" aria-hidden="true"></span>
+        <img src="{% static 'shop/images/finder-telegram-avatar.png' %}" alt="FINDER в Telegram" loading="lazy" decoding="async">
+    </div>
+    <div class="telegram-editorial-copy">
+        <p class="editorial-kicker">FINDER · Telegram</p>
+        <h2 id="telegram-editorial-title">Редкие находки.<br><em>Первыми.</em></h2>
+        <p>{% if telegram_public_is_channel %}Новые поступления, редакционные подборки и вещи, которые не задерживаются в каталоге.{% else %}Следите за заказами, получайте уведомления и оставайтесь на связи с личным менеджером.{% endif %}</p>
+        <a class="button button-dark" href="{{ telegram_public_url }}" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#icon-telegram"></use></svg>{% if telegram_public_is_channel %}Перейти в канал{% else %}Открыть Telegram-бота{% endif %}<span aria-hidden="true">↗</span></a>
+        <small>@{{ telegram_public_username }}</small>
+    </div>
+</section>
+{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n static shop_tags %}
+
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'admin/css/pricing-constructor.css' %}?v=20260914-2">{% endblock %}
+{% block extrahead %}{{ block.super }}<script src="{% static 'admin/js/pricing-constructor.js' %}" defer></script>{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs"><a href="{% url 'admin:index' %}">{% translate 'Home' %}</a> &rsaquo; <a href="{% url 'admin:shop_product_changelist' %}">Товары</a> &rsaquo; Конструктор стоимости</div>
+{% endblock %}
+
+{% block content %}
+<div class="pricing-constructor">
+    <header class="pricing-hero">
+        <div><span>GLOBAL RUB PRICING</span><h1>Конструктор стоимости</h1><p>Единая формула применяется к товарам в CNY, USD, EUR и RUB на витрине, в корзине и при оформлении заказа.</p></div>
+        <a href="{% url 'admin:shop_product_changelist' %}">Перейти к товарам →</a>
+    </header>
+
+    <section class="pricing-panel">
+        <div class="pricing-panel-heading">
+            <div><span>01</span><h2>Курсы валют</h2><p>Количество рублей за одну единицу валюты. При недоступности ЦБ продолжают использоваться последние сохранённые значения.</p></div>
+            <form method="post">{% csrf_token %}<input type="hidden" name="action" value="update_rates"><button class="pricing-secondary-button" type="submit">Обновить из ЦБ</button></form>
+        </div>
+        <form method="post" novalidate>
+            {% csrf_token %}<input type="hidden" name="action" value="save_rates">
+            {{ rate_formset.management_form }}
+            {% if rate_formset.non_form_errors %}<div class="errornote">{{ rate_formset.non_form_errors }}</div>{% endif %}
+            <div class="pricing-table-wrap"><table class="pricing-table rates-table">
+                <thead><tr><th>Валюта</th><th>Рублей за единицу</th><th>Дата курса</th><th>Источник</th></tr></thead>
+                <tbody>{% for form in rate_formset %}<tr>
+                    <td><strong>{{ form.instance.currency }}</strong>{{ form.id }}</td>
+                    <td>{{ form.rubles_per_unit.errors }}{{ form.rubles_per_unit }}</td>
+                    <td>{{ form.rate_date.errors }}{{ form.rate_date }}</td>
+                    <td>{{ form.source.errors }}{{ form.source }}</td>
+                </tr>{% empty %}<tr><td colspan="4" class="pricing-empty">Курсы ещё не загружены. Примените миграции или нажмите «Обновить из ЦБ».</td></tr>{% endfor %}</tbody>
+            </table></div>
+            {% if rate_formset.forms %}<div class="pricing-actions"><button class="pricing-primary-button" type="submit">Сохранить курсы</button></div>{% endif %}
+        </form>
+    </section>
+
+    <section class="pricing-panel">
+        <div class="pricing-panel-heading"><div><span>02</span><h2>Формула и надбавки</h2><p>Строки применяются последовательно по полю «Порядок». Процент считается от текущей суммы либо, при выбранной настройке, от первоначальной стоимости после перевода в рубли.</p></div></div>
+        <form method="post" novalidate data-pricing-rules>
+            {% csrf_token %}<input type="hidden" name="action" value="save_rules">
+            {{ rule_formset.management_form }}
+            {% if rule_formset.non_form_errors %}<div class="errornote">{{ rule_formset.non_form_errors }}</div>{% endif %}
+            <div class="pricing-table-wrap"><table class="pricing-table rules-table">
+                <thead><tr><th>Порядок</th><th>Название расхода</th><th>Тип</th><th>Значение</th><th>От первоначальной суммы</th><th>Активно</th><th></th></tr></thead>
+                <tbody data-rule-rows>{% for form in rule_formset %}<tr class="rule-row">
+                    <td>{{ form.id }}{{ form.position.errors }}{{ form.position }}</td>
+                    <td>{{ form.name.errors }}{{ form.name }}</td>
+                    <td>{{ form.adjustment_type.errors }}{{ form.adjustment_type }}</td>
+                    <td>{{ form.value.errors }}{{ form.value }}</td>
+                    <td class="pricing-checkbox">{{ form.calculate_from_initial.errors }}{{ form.calculate_from_initial }}</td>
+                    <td class="pricing-checkbox">{{ form.is_active.errors }}{{ form.is_active }}</td>
+                    <td class="pricing-delete">{{ form.DELETE }}<button type="button" data-delete-rule aria-label="Удалить строку">×</button></td>
+                </tr>{% endfor %}</tbody>
+            </table></div>
+            <template data-empty-rule><tr class="rule-row">
+                <td>{{ rule_formset.empty_form.id }}{{ rule_formset.empty_form.position }}</td>
+                <td>{{ rule_formset.empty_form.name }}</td>
+                <td>{{ rule_formset.empty_form.adjustment_type }}</td>
+                <td>{{ rule_formset.empty_form.value }}</td>
+                <td class="pricing-checkbox">{{ rule_formset.empty_form.calculate_from_initial }}</td>
+                <td class="pricing-checkbox">{{ rule_formset.empty_form.is_active }}</td>
+                <td class="pricing-delete">{{ rule_formset.empty_form.DELETE }}<button type="button" data-delete-rule aria-label="Удалить строку">×</button></td>
+            </tr></template>
+            <div class="pricing-actions"><button class="pricing-secondary-button" type="button" data-add-rule>+ Добавить расход</button><button class="pricing-primary-button" type="submit">Сохранить формулу</button></div>
+        </form>
+    </section>
+
+    <section class="pricing-panel preview-panel">
+        <div class="pricing-panel-heading"><div><span>03</span><h2>Проверка расчёта</h2><p>Введите исходную цену товара — результат рассчитывается по сохранённым курсам и активным строкам выше.</p></div></div>
+        <div class="preview-layout">
+            <form method="post" class="preview-form" novalidate>
+                {% csrf_token %}<input type="hidden" name="action" value="preview">
+                {{ preview_form.non_field_errors }}
+                <div>{{ preview_form.amount.errors }}{{ preview_form.amount.label_tag }}{{ preview_form.amount }}</div>
+                <div>{{ preview_form.currency.errors }}{{ preview_form.currency.label_tag }}{{ preview_form.currency }}</div>
+                <button class="pricing-primary-button" type="submit">Рассчитать</button>
+            </form>
+            <div class="preview-result">
+                {% if calculation %}
+                    <div class="preview-total"><small>Итоговая цена</small><strong>{{ calculation.total|money }} ₽</strong></div>
+                    <ol class="calculation-steps">
+                        <li><span>Исходная цена</span><b>{{ calculation.source_amount }} {{ calculation.source_currency }}</b></li>
+                        <li><span>Конвертация по курсу {{ calculation.rate }}</span><b>{{ calculation.base_rubles|floatformat:2 }} ₽</b></li>
+                        {% for step in calculation.steps %}<li><span>{{ step.name }} · {% if step.adjustment_type == 'percent' %}{{ step.value }}%{% if step.calculate_from_initial %} от первоначальной суммы{% endif %}{% else %}{{ step.value|money }} ₽{% endif %}</span><b>+ {{ step.amount|floatformat:2 }} ₽ → {{ step.result|floatformat:2 }} ₽</b></li>{% endfor %}
+                        <li class="calculation-rounding"><span>Округление до целого рубля</span><b>{{ calculation.total|money }} ₽</b></li>
+                    </ol>
+                {% elif request.method == 'POST' and request.POST.action == 'preview' and preview_form.is_valid %}
+                    <div class="preview-unavailable"><strong>Цена не рассчитана</strong><p>Для выбранной валюты отсутствует сохранённый курс.</p></div>
+                {% else %}
+                    <div class="preview-placeholder">Здесь появятся этапы формирования рублёвой цены.</div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

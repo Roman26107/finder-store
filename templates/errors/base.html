@@ -1,0 +1,43 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#e3e4e1">
+    <title>{{ status_code }} — {{ error_title }} | FINDER</title>
+    <link rel="stylesheet" href="{% static 'shop/css/errors.css' %}?v=20260922-1">
+</head>
+<body>
+    <header class="error-header">
+        <a class="error-logo" href="/" aria-label="FINDER — на главную">FINDER</a>
+        <span class="error-header-label">Online store</span>
+        <nav aria-label="Навигация страницы ошибки">
+            <a href="/catalog/">Каталог</a>
+            <a href="/">На главную</a>
+        </nav>
+    </header>
+
+    <main class="error-main">
+        <section class="error-stage" aria-labelledby="error-heading">
+            <div class="error-number" aria-hidden="true">{% block error_code %}{{ status_code }}{% endblock %}</div>
+            <article class="error-card">
+                <p class="error-kicker">FINDER / ERROR {{ status_code }}</p>
+                <h1 id="error-heading">{% block error_heading %}{{ error_title }}{% endblock %}</h1>
+                <div class="error-description">{% block error_description %}{% endblock %}</div>
+                <div class="error-actions">{% block error_actions %}{% endblock %}</div>
+            </article>
+            <div class="error-mark" aria-hidden="true">
+                <span></span>
+                <small>EST. 2026</small>
+            </div>
+        </section>
+    </main>
+
+    <footer class="error-footer">
+        <span>© 2026 FINDER</span>
+        <span>Одежда, сумки и аксессуары из бутиков мира</span>
+    </footer>
+</body>
+</html>

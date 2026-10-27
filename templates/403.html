@@ -1,0 +1,10 @@
+{% extends "errors/base.html" %}
+{% block error_code %}403{% endblock %}
+{% block error_heading %}Доступ<br>ограничен{% endblock %}
+{% block error_description %}
+    <p>У вас нет прав для просмотра этой страницы. Войдите в аккаунт или вернитесь к покупкам.</p>
+{% endblock %}
+{% block error_actions %}
+    <a class="error-button error-button-dark" href="/account/login/">Войти в аккаунт <span>→</span></a>
+    <a class="error-button" href="/catalog/">Перейти в каталог</a>
+{% endblock %}

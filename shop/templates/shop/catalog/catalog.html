@@ -1,0 +1,123 @@
+{% extends 'shop/base.html' %}
+{% load static shop_tags %}
+
+{% block title %}{{ catalog_heading }}{% if is_brand_boutique %} — {{ brand_name }}{% endif %} — FINDER{% endblock %}
+{% block brand_styles %}<link rel="stylesheet" href="{% static 'shop/css/catalog.css' %}?v=20260926-1">{% endblock %}
+{% block brand_scripts %}<script src="{% static 'shop/js/catalog.js' %}?v=20260926-1" defer></script>{% endblock %}
+
+{% block content %}
+<div class="page-width {{ page_class|default:'catalog-page' }}" data-analytics-catalog data-analytics-brand="{% if is_brand_boutique %}{{ brand_name }}{% endif %}" data-analytics-category="{{ selected_category }}" data-analytics-results="{{ page_obj.paginator.count }}">
+    <nav class="breadcrumbs">
+        <a href="{% url 'shop:home' %}">Главная</a><span>/</span>
+        {% if is_finder_collection %}<span>FINDER COLLECTION</span>{% elif is_brand_boutique %}<a href="{% url 'shop:stores' %}">Бутики</a><span>/</span><span>{{ brand_name }}</span>{% else %}<span>Каталог</span>{% endif %}
+    </nav>
+    <header class="catalog-header hermes-catalog-header">
+        {% if is_brand_boutique and brand_logo_url %}<img class="catalog-brand-logo" src="{{ brand_logo_url }}" alt="Логотип {{ brand_name }}">{% elif is_brand_boutique and brand_logo %}<img class="catalog-brand-logo" src="{% static brand_logo %}" alt="Логотип {{ brand_name }}">{% endif %}
+        <p class="hermes-eyebrow">{% if catalog_eyebrow %}{{ catalog_eyebrow }}{% elif is_brand_boutique %}{{ brand_location }}{% else %}FINDER · Все бренды{% endif %}</p>
+        <h1>{{ catalog_heading }}</h1>
+        {% if catalog_description %}<p class="catalog-description">{{ catalog_description }}</p>{% endif %}
+    </header>
+
+    <div class="mobile-catalog-tools">
+        <button class="button button-outline" type="button" data-filter-button>Фильтры</button>
+        <button class="button button-outline" type="button" data-sort-button>Сортировать</button>
+    </div>
+
+    <div class="catalog-layout">
+        <aside class="filters hermes-filters" data-filters>
+            <div class="filter-mobile-head"><b>Фильтры</b><button type="button" data-filter-close>×</button></div>
+            <form method="get" data-catalog-filters>
+                {% if request.GET.q %}<input type="hidden" name="q" value="{{ request.GET.q }}">{% endif %}
+                {% if selected_gender %}<input type="hidden" name="gender" value="{{ selected_gender }}">{% endif %}
+                {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+                {% if selected_collection %}<input type="hidden" name="collection" value="{{ selected_collection }}">{% endif %}
+                {% if ordering and ordering != 'popular' %}<input type="hidden" name="ordering" value="{{ ordering }}">{% endif %}
+
+                {% if brands %}<fieldset>
+                    <legend>Бренд</legend>
+                    <div class="catalog-brand-list">
+                        {% for item in brands %}<label class="hermes-material-choice"><input type="radio" name="brand" value="{{ item.slug }}"{% if selected_brand == item.slug %} checked{% endif %} data-auto-filter><span>{{ item.name }} <small>{{ item.count }}</small></span></label>{% endfor %}
+                    </div>
+                </fieldset>{% endif %}
+
+                <fieldset>
+                    <legend>Категория</legend>
+                    <div class="hermes-category-tree">
+                    {% for item in category_tree %}
+                        {% include 'shop/catalog/includes/category_node.html' with item=item selected_category=selected_category level=1 request=request only %}
+                    {% endfor %}
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Цвет</legend>
+                    <div class="hermes-color-list" data-color-list>
+                        {% for item in colors %}
+                            <label class="hermes-color-choice{% if forloop.counter > 4 %} color-extra{% endif %}" title="{{ item.name }}">
+                                <input type="radio" name="color" value="{{ item.value }}" {% if selected_color == item.value %}checked{% endif %} data-auto-filter>
+                                <span class="hermes-swatch" style="--swatch:{{ item.swatch }}" aria-hidden="true"></span>
+                                <span class="hermes-color-name">{{ item.name }} <small>{{ item.count }}</small></span>
+                            </label>
+                        {% empty %}<small>Цвета не указаны</small>{% endfor %}
+                    </div>
+                    {% if colors|length > 4 %}<button class="filter-expand-button" type="button" data-color-toggle aria-expanded="false"><span data-more-text>Вся палитра</span><span data-less-text hidden>Скрыть</span><i aria-hidden="true">+</i></button>{% endif %}
+                </fieldset>
+
+                <fieldset>
+                    <legend>Материал</legend>
+                    <div class="hermes-material-list" data-material-list>
+                        {% for item in materials %}
+                            {% if forloop.counter == 6 %}<div class="hermes-material-extra" data-material-extra hidden>{% endif %}
+                            <label class="hermes-material-choice">
+                                <input type="radio" name="material" value="{{ item.value }}" {% if selected_material == item.value %}checked{% endif %} data-auto-filter>
+                                <span>{{ item.name }} <small>{{ item.count }}</small></span>
+                            </label>
+                            {% if forloop.last and forloop.counter > 5 %}</div>{% endif %}
+                        {% endfor %}
+                    </div>
+                    {% if materials|length > 5 %}<button class="filter-expand-button" type="button" data-material-toggle aria-expanded="false"><span data-more-text>Все материалы</span><span data-less-text hidden>Скрыть</span><i aria-hidden="true">+</i></button>{% endif %}
+                </fieldset>
+
+                <fieldset>
+                    <legend>Цена</legend>
+                    <div class="price-inputs">
+                        <input type="number" name="price_min" value="{{ request.GET.price_min }}" placeholder="От">
+                        <input type="number" name="price_max" value="{{ request.GET.price_max }}" placeholder="До">
+                    </div>
+                </fieldset>
+                <button class="button button-dark filter-submit" type="submit">Применить</button>
+                <a class="clear-filters" href="{{ catalog_url }}">Сбросить фильтры</a>
+            </form>
+        </aside>
+
+        <section class="catalog-products">
+            <div class="catalog-toolbar">
+                <p>Найдено: {{ page_obj.paginator.count }}</p>
+                <form method="get" data-sort-form>
+                    {% for key, value in request.GET.items %}{% if key != 'ordering' and key != 'page' %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
+                    <label>Сортировать:
+                        <select name="ordering" data-sort-select>
+                            <option value="popular" {% if ordering == 'popular' %}selected{% endif %}>По популярности</option>
+                            <option value="new" {% if ordering == 'new' %}selected{% endif %}>Сначала новые</option>
+                            <option value="price_asc" {% if ordering == 'price_asc' %}selected{% endif %}>Цена по возрастанию</option>
+                            <option value="price_desc" {% if ordering == 'price_desc' %}selected{% endif %}>Цена по убыванию</option>
+                        </select>
+                    </label>
+                </form>
+            </div>
+            {% if page_obj %}
+                <div class="product-grid product-grid-three" data-catalog-grid>
+                    {% for product in page_obj %}{% include 'shop/catalog/includes/product_card.html' %}{% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <h2>Товары не найдены</h2>
+                    <p>Измените параметры фильтра.</p>
+                    <a class="button button-outline" href="{{ catalog_url }}">Сбросить фильтры</a>
+                </div>
+            {% endif %}
+            {% if page_obj.has_next %}<div class="catalog-load-more"><a class="button button-outline" href="?{% querystring page=page_obj.next_page_number %}" data-catalog-load-more>Показать ещё</a><small>Показано {{ page_obj.end_index }} из {{ page_obj.paginator.count }}</small></div>{% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "errors/base.html" %}
+{% block error_code %}429{% endblock %}
+{% block error_heading %}Слишком много<br>запросов{% endblock %}
+{% block error_description %}
+    <p>Мы временно ограничили частоту действий для защиты магазина. Подождите немного и повторите попытку.</p>
+    {% if retry_after %}<small>Повторная попытка будет доступна позднее.</small>{% endif %}
+{% endblock %}
+{% block error_actions %}
+    <a class="error-button error-button-dark" href="/">На главную <span>→</span></a>
+    <a class="error-button" href="/catalog/">Открыть каталог</a>
+{% endblock %}

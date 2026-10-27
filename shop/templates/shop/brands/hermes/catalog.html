@@ -1,0 +1,5 @@
+{% extends 'shop/catalog/catalog.html' %}
+{% load static %}
+
+{% block title %}Коллекция Hermès — FINDER{% endblock %}
+{% block brand_styles %}{{ block.super }}<link rel="stylesheet" href="{% static 'shop/brands/hermes/hermes.css' %}?v=20260910-1">{% endblock %}

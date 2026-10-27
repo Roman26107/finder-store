@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 300" role="img" aria-labelledby="title desc">
+  <title id="title">Hermès Paris</title>
+  <desc id="desc">Фирменный логотип Hermès с экипажем</desc>
+  <rect width="520" height="300" fill="#f37021"/>
+  <g fill="none" stroke="#111" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="228" cy="118" r="29"/>
+    <circle cx="337" cy="118" r="29"/>
+    <circle cx="228" cy="118" r="6"/>
+    <circle cx="337" cy="118" r="6"/>
+    <path d="M228 118h109M245 91h75l29 27M255 91l-18-35h63l20 35M247 56h70M263 56V40h43l11 16M274 40V29h25v11M238 82h-34l-23 23M181 105l-33-4-20-18M148 101l-21 17M128 83l-17-17M111 66l-18 4M181 105l21 13M204 82l-8-25M196 57l14-12"/>
+    <path d="M349 118h30l25-31M404 87l18 1 9 18M404 87l-9-21 13-20M408 46l19-9 11 7-7 11-18 3M395 66l-17-12M378 54l-11 6M427 94l16-13M443 81l9 4"/>
+    <path d="M250 89v-24h49v24M272 65v24M248 76h51"/>
+  </g>
+  <g fill="#111" text-anchor="middle">
+    <text x="260" y="203" font-family="Georgia, 'Times New Roman', serif" font-size="48" letter-spacing="4">HERMÈS</text>
+    <text x="260" y="237" font-family="Arial, sans-serif" font-size="15" letter-spacing="8">PARIS</text>
+  </g>
+</svg>

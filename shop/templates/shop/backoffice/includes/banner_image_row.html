@@ -1,0 +1,35 @@
+<article class="media-form-row banner-media-row" data-media-row data-existing="{% if image_form.instance.pk %}true{% else %}false{% endif %}">
+    {{ image_form.id }}{{ image_form.ORDER }}{{ image_form.catalog_image }}
+    <div class="media-row-head">
+        <div><span>Фото <b data-media-number>01</b></span><small data-media-status>{% if image_form.instance.pk %}Сохранено{% else %}Новое{% endif %}</small></div>
+        <div class="media-row-actions">
+            <button type="button" title="Переместить выше" aria-label="Переместить фото выше" data-media-up>↑</button>
+            <button type="button" title="Переместить ниже" aria-label="Переместить фото ниже" data-media-down>↓</button>
+            <button type="button" class="media-remove" data-media-remove>Удалить</button>
+            <button type="button" class="media-restore" data-media-restore hidden>Вернуть</button>
+        </div>
+    </div>
+    <div class="media-row-body banner-media-body">
+        <div class="media-preview banner-image-preview" data-media-preview>
+            {% if image_form.instance.pk and image_form.instance.preview_url %}<img src="{{ image_form.instance.preview_url }}" alt="" loading="lazy" decoding="async">
+            {% else %}<span>Выберите фото</span>{% endif %}
+        </div>
+        <div class="banner-image-fields">
+            <div class="wide banner-catalog-picker" data-banner-picker>
+                <span>Выбрать из каталога</span>
+                <div class="banner-search-row"><input type="search" placeholder="Название, артикул или цвет" data-banner-image-query autocomplete="off"><select data-banner-image-gender><option value="">Все товары</option><option value="women">Женские</option><option value="men">Мужские</option></select><button class="control-button" type="button" data-banner-image-search>Найти</button></div>
+                <div class="banner-selected-image" data-banner-selected>{% if image_form.instance.catalog_image_id %}<b>{{ image_form.instance.catalog_image.product.title }}</b><small>{{ image_form.instance.catalog_image.product.sku_without_size|default:image_form.instance.catalog_image.product.sku }} · фото {{ image_form.instance.catalog_image.position|add:1 }}</small>{% else %}<span>Фото из каталога не выбрано</span>{% endif %}</div>
+                <div class="banner-search-results" data-banner-results hidden></div>
+            </div>
+            <div class="media-source-divider"><span>или</span></div>
+            <label class="wide media-upload-field"><span>Загрузить своё фото</span>{{ image_form.uploaded_image }}<small>Приоритет над фото из каталога · автоматически WebP до 1600 px.</small></label>
+            <div class="wide banner-audience" data-banner-audience{% if not banner.personalize_by_gender %} hidden{% endif %}>
+                <span>Кому показывать это фото</span>
+                <div class="banner-audience-options">{% for radio in image_form.audience %}<label>{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}</div>
+            </div>
+            {% for field in image_form.visible_fields %}{% for error in field.errors %}<em class="wide">{{ field.label }}: {{ error }}</em>{% endfor %}{% endfor %}
+        </div>
+    </div>
+    <div hidden>{{ image_form.DELETE }}</div>
+    {% for error in image_form.non_field_errors %}<em class="media-row-error">{{ error }}</em>{% endfor %}
+</article>

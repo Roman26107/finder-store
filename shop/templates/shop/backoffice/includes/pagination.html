@@ -1,0 +1,7 @@
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="control-pagination" aria-label="Страницы">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if visibility %}&visibility={{ visibility }}{% endif %}{% if stock %}&stock={{ stock }}{% endif %}{% if collection %}&collection={{ collection }}{% endif %}">← Назад</a>{% endif %}
+    <span>{{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if visibility %}&visibility={{ visibility }}{% endif %}{% if stock %}&stock={{ stock }}{% endif %}{% if collection %}&collection={{ collection }}{% endif %}">Вперёд →</a>{% endif %}
+</nav>
+{% endif %}

@@ -1,0 +1,53 @@
+{% extends 'shop/backoffice/base.html' %}
+{% load shop_tags %}
+{% block title %}{{ order.number }}{% endblock %}
+{% block content %}
+<header class="control-page-heading heading-actions">
+    <div><a class="back-link" href="{% url 'shop:control_orders' %}">← Заказы</a><h1>{{ order.number }}</h1><p>Создан {{ order.created_at|date:'d.m.Y в H:i' }}</p></div>
+    <span class="status large status-{{ order.status }}">{{ order.status|status_icon }} {{ order.get_status_display }}</span>
+</header>
+<div class="detail-layout">
+    <div>
+        <section class="control-panel">
+            <div class="panel-heading"><div><span>Состав заказа</span><h2>{{ order.items.all|length }} позиций</h2></div></div>
+            <div class="line-items">
+                {% for item in order.items.all %}
+                <article><span>{{ forloop.counter|stringformat:'02d' }}</span><div><b>{{ item.product_title }}</b><small>{{ item.brand|upper }} · {{ item.sku }}{% if item.color %} · {{ item.color }}{% endif %}{% if item.size %} · {{ item.size }}{% endif %}</small></div><p>{{ item.quantity }} × {{ item.unit_price|money }} {{ item.currency }}</p><strong>{{ item.subtotal|money }} {{ item.currency }}</strong></article>
+                {% endfor %}
+                {% if order.discount_amount %}<footer><span>Скидка {{ order.promo_code }}</span><b>−{{ order.discount_amount|money }} {{ order.currency }}</b></footer>{% endif %}{% if order.delivery_method %}<footer><span>{{ order.get_delivery_method_display }}</span><b>{{ order.delivery_cost|money }} {{ order.currency }}</b></footer>{% endif %}<footer><span>Предварительная стоимость</span><b>{{ order.estimated_total|money }} {{ order.currency }}</b></footer>
+            </div>
+        </section>
+        <section class="control-panel customer-panel">
+            <div class="panel-heading"><div><span>Экономика</span><h2>Фактические показатели</h2></div></div>
+            <div class="customer-grid">
+                <div><small>Оплачен</small><span>{{ order.paid_at|date:'d.m.Y H:i'|default:'—' }}</span></div>
+                <div><small>Выручка</small><span>{% if order.actual_revenue is not None %}{{ order.actual_revenue|money }} ₽{% else %}—{% endif %}</span></div>
+                <div><small>Себестоимость</small><span>{% if order.cost_of_goods is not None %}{{ order.cost_of_goods|money }} ₽{% else %}Не внесена{% endif %}</span></div>
+                <div><small>Валовая прибыль</small><span>{% if order.gross_profit is not None %}{{ order.gross_profit|money }} ₽{% else %}—{% endif %}</span></div>
+            </div>
+        </section>
+        <section class="control-panel customer-panel">
+            <div class="panel-heading"><div><span>Атрибуция</span><h2>Первое и последнее касание</h2></div></div>
+            <div class="customer-grid">
+                <div><small>First-touch источник</small><span>{{ order.first_source|default:'direct' }}</span></div>
+                <div><small>First-touch кампания</small><span>{{ order.first_utm_campaign|default:'—' }}</span></div>
+                <div><small>Last-touch источник</small><span>{{ order.source|default:'direct' }}</span></div>
+                <div><small>Last-touch кампания</small><span>{{ order.utm_campaign|default:'—' }}</span></div>
+                <div><small>Первое объявление</small><span>{{ order.first_utm_content|default:'—' }} {{ order.first_ad_id }}</span></div>
+                <div><small>Последнее объявление</small><span>{{ order.utm_content|default:'—' }} {{ order.ad_id }}</span></div>
+            </div>
+        </section>
+        <section class="control-panel customer-panel">
+            <div class="panel-heading"><div><span>Покупатель</span><h2>{{ order.customer_name }}</h2></div></div>
+            <div class="customer-grid">
+                <div><small>E-mail</small><a href="mailto:{{ order.customer_email }}">{{ order.customer_email }}</a></div>
+                <div><small>Телефон</small><a href="tel:{{ order.customer_phone }}">{{ order.customer_phone }}</a></div>
+                <div><small>Telegram</small><span>{{ order.customer_telegram|default:'—' }}</span></div>
+                <div><small>Предпочтительная связь</small><span>{{ order.get_preferred_contact_display }}</span></div>
+                <div class="wide"><small>Адрес доставки</small><span>{{ order.delivery_address }}</span></div>{% if order.delivery_method %}<div><small>Тариф доставки</small><span>{{ order.get_delivery_method_display }}</span></div>{% endif %}{% if order.payment_method %}<div><small>Способ оплаты</small><span>{{ order.get_payment_method_display }}</span></div>{% endif %}
+            </div>
+        </section>
+    </div>
+    <aside><section class="control-panel workflow-form"><h2>Работа с заказом</h2><form method="post">{% csrf_token %}{% for field in form %}<label><span>{{ field.label }}</span>{{ field }}{% if field.errors %}<em>{{ field.errors|striptags }}</em>{% endif %}</label>{% endfor %}{% if can_change %}<button class="control-button dark full" type="submit">Сохранить</button>{% else %}<p class="permission-note">Доступен только просмотр.</p>{% endif %}</form></section></aside>
+</div>
+{% endblock %}

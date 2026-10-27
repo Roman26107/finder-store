@@ -1,0 +1,15 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n admin_urls static %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'admin:index' %}">{% translate 'Home' %}</a> &rsaquo; <a href="{% url 'admin:shop_product_changelist' %}">Товары</a> &rsaquo; Импорт JSON</div>{% endblock %}
+{% block content %}
+<div class="import-card">
+    <h1>Импорт товаров из JSON</h1>
+    <p>Загрузите один или несколько файлов. Поддерживаются одиночная карточка, массив карточек и объект с ключом <code>products</code>.</p>
+    <ul><li>Новые товары создаются по полю <code>sku</code>.</li><li>Существующие товары с тем же <code>sku</code> обновляются.</li><li>Исходная карточка сохраняется в поле <code>raw_data</code>.</li><li>Поля <code>i18n.ru</code> используются для русских текстов, когда они заполнены.</li></ul>
+    <form method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}
+        {% if form.non_field_errors %}{{ form.non_field_errors }}{% endif %}
+        {% for field in form %}<div class="form-row"><div>{{ field.errors }}{{ field.label_tag }}{{ field }}{% if field.help_text %}<div class="help">{{ field.help_text }}</div>{% endif %}</div></div>{% endfor %}
+        <div class="submit-row"><input type="submit" value="Импортировать" class="default"><a href="{% url 'admin:shop_product_changelist' %}" class="closelink">Отмена</a></div>
+    </form>
+</div>
+{% endblock %}

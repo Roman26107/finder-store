@@ -1,0 +1,53 @@
+{% extends 'shop/base.html' %}
+{% load static shop_tags %}
+
+{% block title %}Мои заказы — FINDER{% endblock %}
+{% block brand_styles %}<link rel="stylesheet" href="{% static 'shop/orders/orders.css' %}?v=20260921-2">{% endblock %}
+
+{% block content %}
+<div class="page-width orders-page">
+    <nav class="breadcrumbs"><a href="{% url 'shop:home' %}">Главная</a><span>/</span><a href="{% url 'shop:account' %}">Личный кабинет</a><span>/</span><span>Мои заказы</span></nav>
+    <header class="orders-heading">
+        <div><p class="order-kicker">Личный кабинет</p><h1>Мои заказы</h1></div>
+        <a class="button button-dark" href="{% url 'shop:product_request_create' %}">Заказать товар</a>
+    </header>
+
+    {% if orders %}
+    <section class="orders-section">
+        <div class="orders-section-title"><h2>Заказы из корзины</h2><span>{{ orders|length }}</span></div>
+        <div class="orders-list">
+            {% for order in orders %}
+            <a class="order-row" href="{{ order.get_absolute_url }}">
+                <div><span>Номер</span><b>{{ order.number }}</b></div>
+                <div><span>Товары</span><b>{{ order.items.first.product_title }}{% if order.items.count > 1 %} и ещё {{ order.items.count|add:'-1' }}{% endif %}</b></div>
+                <div><span>Стоимость</span><b>{{ order.estimated_total|money }} {{ order.currency|currency_symbol }}</b></div>
+                <div><span>Статус</span><b class="order-status status-{{ order.status }}">{{ order.get_status_display }}</b></div>
+                <i>→</i>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if personal_orders %}
+    <section class="orders-section">
+        <div class="orders-section-title"><h2>Персональные заказы</h2><span>{{ personal_orders|length }}</span></div>
+        <div class="orders-list">
+            {% for order in personal_orders %}
+            <a class="order-row" href="{{ order.get_absolute_url }}">
+                <div><span>Номер</span><b>{{ order.number }}</b></div>
+                <div><span>Товары</span><b>{% with requested=order.items.first count=order.items.count %}{% if requested %}{{ requested.brand }} — {{ requested.product_name }}{% if count > 1 %} и ещё {{ count|add:'-1' }}{% endif %}{% else %}—{% endif %}{% endwith %}</b></div>
+                <div><span>Дата</span><b>{{ order.created_at|date:'d.m.Y' }}</b></div>
+                <div><span>Статус</span><b class="order-status status-{{ order.status }}">{{ order.get_status_display }}</b></div>
+                <i>→</i>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if not orders and not personal_orders %}
+    <div class="orders-empty"><span>◇</span><h2>У вас пока нет заказов</h2><p>Выберите товар в каталоге или отправьте персональный запрос на поиск.</p><div><a class="button button-dark" href="{% url 'shop:catalog' %}">Перейти в каталог</a><a class="button button-outline" href="{% url 'shop:product_request_create' %}">Заказать товар</a></div></div>
+    {% endif %}
+</div>
+{% endblock %}

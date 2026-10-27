@@ -1,0 +1,5 @@
+{% extends 'shop/catalog/catalog.html' %}
+{% load static %}
+
+{% block title %}Коллекция Miu Miu — FINDER{% endblock %}
+{% block brand_styles %}{{ block.super }}<link rel="stylesheet" href="{% static 'shop/brands/miumiu/miumiu.css' %}?v=20260910-1">{% endblock %}

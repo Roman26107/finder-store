@@ -1,0 +1,24 @@
+<header class="control-page-heading analytics-heading">
+    <div>
+        <span>First-party analytics · {{ period_label }}</span>
+        <h1>{% if analytics_section == 'marketing' %}Маркетинг{% elif analytics_section == 'catalog' %}Каталог{% elif analytics_section == 'behavior' %}Поведение{% elif analytics_section == 'sales' %}Продажи и CRM{% elif analytics_section == 'finance' %}Финансы{% else %}Обзор{% endif %}</h1>
+        <p>{% if analytics_section == 'marketing' %}Эффективность источников, кампаний и рекламного бюджета.{% elif analytics_section == 'catalog' %}Спрос, товарная воронка и состояние ассортимента.{% elif analytics_section == 'behavior' %}Как посетители используют витрину и где покидают её.{% elif analytics_section == 'sales' %}Статистика лидов, CRM-этапов и оформления заказа.{% elif analytics_section == 'finance' %}Фактическая выручка, расходы и прибыль по оплаченным заказам.{% else %}Главные показатели бизнеса без лишних деталей.{% endif %}</p>
+    </div>
+    <div class="analytics-period-controls">
+        <nav class="analytics-periods" aria-label="Период отчёта">
+            <a href="?days=1"{% if days == 1 and not custom_period %} class="active" aria-current="page"{% endif %}>Сегодня</a>
+            <a href="?days=7"{% if days == 7 and not custom_period %} class="active" aria-current="page"{% endif %}>7 дней</a>
+            <a href="?days=30"{% if days == 30 and not custom_period %} class="active" aria-current="page"{% endif %}>30 дней</a>
+            <a href="?days=90"{% if days == 90 and not custom_period %} class="active" aria-current="page"{% endif %}>90 дней</a>
+            <a href="?days=365"{% if days == 365 and not custom_period %} class="active" aria-current="page"{% endif %}>Год</a>
+        </nav>
+        <details class="analytics-custom-wrap"{% if custom_period %} open{% endif %}>
+            <summary>Свой период</summary>
+            <form method="get" class="analytics-custom-period">
+                <label><span>С</span><input type="date" name="date_from" value="{{ date_from|date:'Y-m-d' }}" required></label>
+                <label><span>По</span><input type="date" name="date_to" value="{{ date_to|date:'Y-m-d' }}" required></label>
+                <button type="submit">Показать</button>
+            </form>
+        </details>
+    </div>
+</header>

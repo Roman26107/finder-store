@@ -1,0 +1,56 @@
+{% extends 'shop/backoffice/base.html' %}
+{% load shop_tags %}
+{% block title %}{{ product_request.number }}{% endblock %}
+{% block content %}
+<header class="control-page-heading heading-actions">
+    <div><a class="back-link" href="{% url 'shop:control_requests' %}">← Заявки</a><h1>{{ product_request.number }}</h1><p>Создана {{ product_request.created_at|date:'d.m.Y в H:i' }}</p></div>
+    <span class="status large status-{{ product_request.lead_status }}">{{ product_request.lead_status|status_icon }} {{ product_request.get_lead_status_display }}</span>
+</header>
+<div class="detail-layout">
+    <div>
+        <section class="control-panel">
+            <div class="panel-heading"><div><span>Что ищет клиент</span><h2>{{ product_request.items.all|length }} позиций</h2></div></div>
+            <div class="request-items">
+                {% for item in product_request.items.all %}
+                <article><span>{{ forloop.counter|stringformat:'02d' }}</span><div><small>{{ item.brand }}</small><h3>{{ item.product_name }}</h3><p>{% if item.article %}Артикул: {{ item.article }}{% endif %}{% if item.color %} · Цвет: {{ item.color }}{% endif %}{% if item.size %} · Размер: {{ item.size }}{% endif %}</p>{% if item.source_url %}<a href="{{ item.source_url }}" target="_blank" rel="noopener">Ссылка на товар ↗</a>{% endif %}{% if item.reference_image %}<a href="{{ item.reference_image.url }}" target="_blank" rel="noopener"><img src="{{ item.reference_image.url }}" alt="" loading="lazy" decoding="async" width="90" height="110" style="object-fit:contain"></a>{% endif %}</div></article>
+                {% endfor %}
+            </div>
+        </section>
+        <section class="control-panel customer-panel">
+            <div class="panel-heading"><div><span>CRM</span><h2>Путь лида</h2></div></div>
+            <div class="customer-grid">
+                <div><small>Связались</small><span>{{ product_request.contacted_at|date:'d.m.Y H:i'|default:'—' }}</span></div>
+                <div><small>Квалифицировали</small><span>{{ product_request.qualified_at|date:'d.m.Y H:i'|default:'—' }}</span></div>
+                <div><small>Сделали предложение</small><span>{{ product_request.offered_at|date:'d.m.Y H:i'|default:'—' }}</span></div>
+                <div><small>Создали заказ</small><span>{{ product_request.ordered_at|date:'d.m.Y H:i'|default:'—' }}</span></div>
+                <div><small>Причина отказа</small><span>{{ product_request.get_loss_reason_display|default:'—' }}</span></div>
+                <div><small>Созданный заказ</small>{% if product_request.converted_order %}<a href="{% url 'shop:control_order_detail' product_request.converted_order_id %}">{{ product_request.converted_order.number }}</a>{% else %}<span>—</span>{% endif %}</div>
+                {% if product_request.loss_reason_note %}<div class="wide"><small>Комментарий к отказу</small><span>{{ product_request.loss_reason_note }}</span></div>{% endif %}
+            </div>
+        </section>
+        <section class="control-panel customer-panel">
+            <div class="panel-heading"><div><span>Атрибуция</span><h2>Первое и последнее касание</h2></div></div>
+            <div class="customer-grid">
+                <div><small>First-touch источник</small><span>{{ product_request.first_source|default:'direct' }}</span></div>
+                <div><small>First-touch кампания</small><span>{{ product_request.first_utm_campaign|default:'—' }}</span></div>
+                <div><small>Last-touch источник</small><span>{{ product_request.source|default:'direct' }}</span></div>
+                <div><small>Last-touch кампания</small><span>{{ product_request.utm_campaign|default:'—' }}</span></div>
+                <div><small>Первое объявление</small><span>{{ product_request.first_utm_content|default:'—' }} {{ product_request.first_ad_id }}</span></div>
+                <div><small>Последнее объявление</small><span>{{ product_request.utm_content|default:'—' }} {{ product_request.ad_id }}</span></div>
+                <div class="wide"><small>Первая посадочная</small><span>{{ product_request.first_landing_page|default:'—' }}</span></div>
+                <div class="wide"><small>Последняя посадочная</small><span>{{ product_request.landing_page|default:'—' }}</span></div>
+            </div>
+        </section>
+        <section class="control-panel customer-panel">
+            <div class="panel-heading"><div><span>Лид и клиент</span><h2>{{ product_request.customer_name }}</h2></div></div>
+            <div class="customer-grid">
+                <div><small>E-mail</small><a href="mailto:{{ product_request.customer_email }}">{{ product_request.customer_email }}</a></div>
+                <div><small>Телефон</small><a href="tel:{{ product_request.customer_phone }}">{{ product_request.customer_phone }}</a></div>
+                <div><small>Telegram</small><span>{{ product_request.customer_telegram|default:'—' }}</span></div>
+                <div><small>Тип клиента</small><span>{% if product_request.is_repeat_customer %}Повторный{% else %}Новый{% endif %}</span></div>
+            </div>
+        </section>
+    </div>
+    <aside><section class="control-panel workflow-form"><h2>Работа с заявкой</h2><form method="post">{% csrf_token %}{% for field in form %}<label><span>{{ field.label }}</span>{{ field }}{% if field.errors %}<em>{{ field.errors|striptags }}</em>{% endif %}</label>{% endfor %}{% if can_change %}<button class="control-button dark full" type="submit">Сохранить</button>{% else %}<p class="permission-note">Доступен только просмотр.</p>{% endif %}</form></section></aside>
+</div>
+{% endblock %}

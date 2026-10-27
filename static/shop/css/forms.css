@@ -1,0 +1,364 @@
+/* Единая система форм FINDER. Загружается после страничных стилей. */
+:root {
+    --field-bg: var(--surface);
+    --field-bg-hover: var(--warm);
+    --field-border: var(--line);
+    --field-border-hover: #858986;
+    --field-focus: #1b1a18;
+    --field-error: #963f3f;
+    --field-error-bg: #fff8f7;
+    --field-radius: 6px;
+}
+
+input, select, textarea { caret-color: var(--ink); }
+input::placeholder, textarea::placeholder { color: #aaa39a; opacity: 1; }
+
+.form-field,
+.request-field,
+.checkout-field {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-field > label,
+.request-field > label,
+.checkout-field > label {
+    margin: 0;
+    color: #4d4944;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: .075em;
+    text-transform: uppercase;
+}
+.form-field:has(:is(input,select,textarea):required) > label::after {
+    content: "  *";
+    color: #8d5d47;
+}
+.form-field.is-filled > label { color: #272522; }
+
+.form-field :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea),
+.request-field :is(input, select, textarea),
+.checkout-field :is(input, select, textarea),
+.price-inputs input {
+    width: 100%;
+    min-height: 52px;
+    padding: 13px 15px;
+    border: 1px solid var(--field-border);
+    border-radius: var(--field-radius);
+    outline: 0;
+    background-color: var(--field-bg);
+    color: #1b1a18;
+    font: 500 13px/1.4 var(--sans);
+    transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease;
+}
+
+.form-field textarea,
+.request-field textarea,
+.checkout-field textarea {
+    min-height: 112px;
+    resize: vertical;
+}
+
+.form-field select,
+.request-field select,
+.checkout-field select,
+.catalog-toolbar select {
+    appearance: none;
+    padding-right: 44px !important;
+    background-image: linear-gradient(45deg, transparent 50%, #5f5a54 50%), linear-gradient(135deg, #5f5a54 50%, transparent 50%);
+    background-position: calc(100% - 19px) 50%, calc(100% - 14px) 50%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+}
+
+@media (max-width: 760px) {
+    .catalog-toolbar label {
+        display: flex;
+        width: 100%;
+        min-width: 0;
+        justify-content: space-between;
+        white-space: nowrap;
+    }
+    .catalog-toolbar select {
+        min-width: 0;
+        max-width: 180px;
+        padding-right: 30px !important;
+        text-overflow: ellipsis;
+    }
+}
+
+.form-field :is(input, select, textarea):hover,
+.request-field :is(input, select, textarea):hover,
+.checkout-field :is(input, select, textarea):hover,
+.price-inputs input:hover {
+    border-color: var(--field-border-hover);
+    background-color: var(--field-bg-hover);
+}
+
+.form-field :is(input, select, textarea):focus-visible,
+.request-field :is(input, select, textarea):focus-visible,
+.checkout-field :is(input, select, textarea):focus-visible,
+.price-inputs input:focus-visible,
+.catalog-toolbar select:focus-visible {
+    border-color: var(--field-focus);
+    background-color: var(--surface-strong);
+    box-shadow: 0 0 0 3px #1b1a1812;
+    outline: 0;
+}
+.form-field:focus-within > label,
+.request-field:focus-within > label,
+.checkout-field:focus-within > label { color: #171717; }
+
+.form-field.has-error :is(input, select, textarea),
+.request-field.has-error :is(input, select, textarea),
+.checkout-field.has-error :is(input, select, textarea) {
+    border-color: var(--field-error);
+    background-color: var(--field-error-bg);
+}
+
+.field-error,
+.request-field > small,
+.checkout-field > small,
+.checkout-error {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin: 0;
+    color: var(--field-error);
+    font-size: 10px;
+    line-height: 1.45;
+}
+
+.field-error::before,
+.request-field > small::before,
+.checkout-field > small::before,
+.checkout-error::before { content: "!"; font-weight: 700; }
+
+.field-help {
+    margin-top: -1px;
+    color: #777169;
+    font-size: 10px;
+    line-height: 1.55;
+}
+.field-help ul { margin: 5px 0 0; padding-left: 17px; }
+
+.form-alert,
+.request-form-alert,
+.checkout-alert {
+    padding: 14px 16px;
+    border: 1px solid #e4caca;
+    border-left: 3px solid var(--field-error);
+    border-radius: 4px;
+    background: #fbf1f0;
+    color: #783434;
+    font-size: 11px;
+    line-height: 1.55;
+}
+
+.password-control { position: relative; }
+.password-control > input { padding-right: 74px !important; }
+.password-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    translate: 0 -50%;
+    min-height: 32px;
+    padding: 0 7px;
+    border: 0;
+    border-radius: 3px;
+    background: transparent;
+    color: #625d57;
+    font: 600 9px/1 var(--sans);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+.password-toggle:hover { background: var(--warm); color: #171717; }
+.password-toggle:focus-visible { outline: 2px solid #171717; outline-offset: 1px; }
+
+.contact-methods { gap: 10px; }
+.contact-methods label {
+    position: relative;
+    min-height: 54px;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    cursor: pointer;
+}
+.contact-methods input { position: absolute; opacity: 0; pointer-events: none; }
+.contact-methods label > span {
+    display: flex;
+    align-items: center;
+    min-height: 54px;
+    padding: 13px 15px 13px 43px;
+    border: 1px solid var(--field-border);
+    border-radius: var(--field-radius);
+    background: var(--field-bg);
+    color: #4d4944;
+    font-size: 11px;
+    transition: .18s ease;
+}
+.contact-methods label > span::before {
+    content: "";
+    position: absolute;
+    left: 15px;
+    width: 16px;
+    height: 16px;
+    border: 1px solid #aaa39a;
+    border-radius: 50%;
+    background: var(--surface-strong);
+    box-shadow: inset 0 0 0 4px var(--surface-strong);
+}
+.contact-methods label:hover > span { border-color: var(--field-border-hover); background: var(--field-bg-hover); }
+.contact-methods label:has(input:checked) > span { border-color: #1b1a18; background: var(--warm); color: #171717; }
+.contact-methods label:has(input:checked) > span::before { border-color: #1b1a18; background: #1b1a18; }
+.contact-methods label:has(input:focus-visible) > span { outline: 2px solid #171717; outline-offset: 2px; }
+
+.request-item {
+    border-radius: 8px;
+    background: var(--warm);
+    box-shadow: inset 0 1px #ffffff80;
+}
+.request-field :is(input, select, textarea) { background-color: var(--surface-strong); }
+
+.price-inputs { gap: 9px; }
+.price-inputs input { min-width: 0; min-height: 44px; padding: 10px 12px; font-size: 11px; }
+.catalog-toolbar label { display: flex; align-items: center; gap: 8px; }
+.catalog-toolbar select {
+    min-height: 36px;
+    padding: 7px 34px 7px 10px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background-color: var(--surface);
+    color: #34312e;
+}
+.search-panel input {
+    min-height: 46px;
+    padding: 11px 4px;
+    border-bottom-color: #b8b1a8;
+    font-size: 13px;
+}
+.search-panel input:focus { border-bottom-color: #171717; box-shadow: 0 1px #171717; }
+
+.quantity-form {
+    height: 42px;
+    overflow: hidden;
+    border: 1px solid var(--field-border);
+    border-radius: var(--field-radius);
+    background: var(--field-bg);
+    transition: border-color .18s, box-shadow .18s;
+}
+.quantity-form:focus-within { border-color:#171717; box-shadow:0 0 0 3px #1b1a1812; }
+.quantity-form button {
+    width: 38px;
+    background: transparent;
+    color:#4f4a45;
+    font-size:17px;
+    transition:background .16s;
+}
+.quantity-form button:hover { background:#ebe6df; color:#171717; }
+.quantity-form input { width:48px; background:transparent; font-size:12px; font-weight:600; outline:0; }
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #1b1a18;
+    -webkit-box-shadow: 0 0 0 1000px var(--field-bg) inset;
+    transition: background-color 9999s ease-out;
+}
+
+:is(input, select, textarea):disabled {
+    cursor: not-allowed;
+    border-color: #dfdbd5 !important;
+    background-color: #efede9 !important;
+    color: #969089 !important;
+    opacity: 1;
+}
+
+@media (max-width: 760px) {
+    .form-field :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea),
+    .request-field :is(input, select, textarea),
+    .checkout-field :is(input, select, textarea) {
+        min-height: 54px;
+        font-size: 16px; /* предотвращает автоматический zoom в iOS */
+    }
+    .form-field > label,.request-field > label,.checkout-field > label { font-size: 10px; }
+    .contact-methods label > span { min-height: 56px; font-size: 13px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .form-field :is(input, select, textarea),
+    .request-field :is(input, select, textarea),
+    .checkout-field :is(input, select, textarea) { transition: none; }
+}
+
+.finder-storefront {
+    --field-bg: transparent;
+    --field-bg-hover: transparent;
+    --field-border: #8f918c;
+    --field-border-hover: #565854;
+    --field-focus: var(--ink);
+    --field-radius: 0;
+}
+.finder-storefront .form-field,
+.finder-storefront .request-field,
+.finder-storefront .checkout-field { gap: 2px; }
+.finder-storefront .form-field > label,
+.finder-storefront .request-field > label,
+.finder-storefront .checkout-field > label {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .18em;
+}
+.finder-storefront .form-field :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea),
+.finder-storefront .request-field :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea),
+.finder-storefront .checkout-field :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea),
+.finder-storefront .price-inputs input {
+    min-height: 48px;
+    padding: 10px 0 12px;
+    border-width: 0 0 1px;
+    border-radius: 0;
+    background: transparent;
+    font-size: 16px;
+    font-weight: 500;
+    box-shadow: none;
+}
+.finder-storefront .form-field textarea,
+.finder-storefront .request-field textarea,
+.finder-storefront .checkout-field textarea { min-height: 96px; padding-top: 10px; }
+.finder-storefront .form-field :is(input,textarea):hover,
+.finder-storefront .request-field :is(input,textarea):hover,
+.finder-storefront .checkout-field :is(input,textarea):hover,
+.finder-storefront .price-inputs input:hover { background: transparent; }
+.finder-storefront .form-field :is(input,textarea):focus-visible,
+.finder-storefront .request-field :is(input,textarea):focus-visible,
+.finder-storefront .checkout-field :is(input,textarea):focus-visible,
+.finder-storefront .price-inputs input:focus-visible {
+    border-color: var(--field-focus);
+    background: transparent;
+    box-shadow: 0 1px 0 var(--field-focus);
+}
+.finder-storefront .form-field select,
+.finder-storefront .request-field select,
+.finder-storefront .checkout-field select {
+    min-height: 48px;
+    padding: 10px 32px 10px 0 !important;
+    border-width: 0 0 1px;
+    border-radius: 0;
+    background-color: transparent;
+}
+.finder-storefront .form-field.has-error :is(input,select,textarea),
+.finder-storefront .request-field.has-error :is(input,select,textarea),
+.finder-storefront .checkout-field.has-error :is(input,select,textarea) {
+    background: transparent;
+    box-shadow: 0 1px 0 var(--field-error);
+}
+.finder-storefront input:-webkit-autofill,
+.finder-storefront input:-webkit-autofill:hover,
+.finder-storefront input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px var(--paper) inset;
+}

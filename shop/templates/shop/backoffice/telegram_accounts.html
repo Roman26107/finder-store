@@ -1,0 +1,9 @@
+{% extends 'shop/backoffice/base.html' %}
+{% block title %}Telegram{% endblock %}
+{% block content %}
+<header class="control-page-heading heading-actions"><div><span>Интеграция</span><h1>Telegram</h1><p>Привязки пользователей и безопасный запуск бота в нужном интерфейсе.</p></div>{% if can_add %}<a class="control-button dark" href="{{ technical_add_url }}">Добавить привязку</a>{% endif %}</header>
+<section class="control-panel"><div class="panel-heading"><div><span>Аккаунты</span><h2>Привязанные пользователи</h2></div></div>
+<div class="control-table-wrap"><table class="control-table"><thead><tr><th>Пользователь</th><th>Chat ID</th><th>Username</th><th>Роль</th><th>Доступ</th><th>Открыть бота</th></tr></thead><tbody>
+{% for account in accounts %}<tr><td><a href="{% url 'shop:control_user_detail' account.user_id %}"><b>{{ account.user.get_full_name|default:account.user.username }}</b></a><small>{{ account.user.email }}</small></td><td>{{ account.chat_id }}</td><td>{{ account.username|default:'—' }}</td><td>{{ account.get_role_display }}</td><td>{% if account.is_active %}<span class="status status-completed">Активен</span>{% else %}<span class="status status-cancelled">Отключён</span>{% endif %}</td><td>{% if bot_username and account.is_active %}<div class="heading-buttons"><a class="control-button" href="https://t.me/{{ bot_username }}?start=customer" target="_blank" rel="noopener">Как пользователь</a>{% if account.role == 'administrator' %}<a class="control-button dark" href="https://t.me/{{ bot_username }}?start=admin" target="_blank" rel="noopener">Как администратор</a>{% endif %}</div>{% else %}—{% endif %}</td></tr>{% empty %}<tr><td colspan="6" class="empty-table">Привязок пока нет.</td></tr>{% endfor %}
+</tbody></table></div></section>
+{% endblock %}

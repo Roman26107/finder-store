@@ -1,0 +1,51 @@
+{% extends 'shop/base.html' %}
+{% load static shop_tags %}
+{% block title %}Личный кабинет — FINDER{% endblock %}
+{% block brand_styles %}<link rel="stylesheet" href="{% static 'shop/account/account.css' %}?v=20260921-2"><link rel="stylesheet" href="{% static 'shop/css/catalog.css' %}?v=20260918-3">{% endblock %}
+{% block content %}
+<div class="page-width account-dashboard account-workspace">
+    <nav class="breadcrumbs"><a href="{% url 'shop:home' %}">Главная</a><span>/</span><span>Личный кабинет</span></nav>
+    <header class="account-workspace-head"><h1>Личный кабинет</h1><p>{{ request.user.get_full_name|default:request.user.username }} · {{ request.user.email }}</p></header>
+    <div class="account-workspace-layout">
+        <nav class="account-tabs" aria-label="Разделы личного кабинета">
+            <a class="{% if active_tab == 'orders' %}active{% endif %}" href="{% url 'shop:account' %}?tab=orders">Заказы{% if order_count %}<span>{{ order_count }}</span>{% endif %}</a>
+            <a class="{% if active_tab == 'favorites' %}active{% endif %}" href="{% url 'shop:account' %}?tab=favorites">Избранное{% if account_favorite_count %}<span>{{ account_favorite_count }}</span>{% endif %}</a>
+            <a class="{% if active_tab == 'addresses' %}active{% endif %}" href="{% url 'shop:account' %}?tab=addresses">Адреса{% if address_count %}<span>{{ address_count }}</span>{% endif %}</a>
+            <a class="{% if active_tab == 'profile' %}active{% endif %}" href="{% url 'shop:account' %}?tab=profile">Профиль</a>
+            {% if request.user.is_staff %}<a class="admin-access-link" href="{% url 'shop:control_dashboard' %}">Панель управления <span>→</span></a>{% endif %}
+            <form method="post" action="{% url 'shop:logout' %}">{% csrf_token %}<button class="account-logout" type="submit">Выйти</button></form>
+        </nav>
+
+        <section class="account-tab-body">
+            {% if active_tab == 'orders' %}
+                <div class="account-section-heading"><div><p>История покупок</p><h2>Заказы</h2></div><a class="button button-outline" href="{% url 'shop:product_request_create' %}">Найти вещь</a></div>
+                {% for order in orders %}
+                    <article class="account-order-card">
+                        <header><div><b>Заказ {{ order.number }}</b><span>от {{ order.created_at|date:'d.m.Y' }}</span></div><strong class="order-status status-{{ order.status }}">{{ order.get_status_display }}</strong></header>
+                        <div class="account-order-thumbs">{% for item in order.items.all %}<a href="{% if item.product %}{{ item.product.get_absolute_url }}{% else %}{{ order.get_absolute_url }}{% endif %}" title="{{ item.product_title }}">{% if item.product and item.product.primary_image %}<img src="{{ item.product.primary_image.preview_url }}" alt="{{ item.product_title }}" loading="lazy">{% else %}<span>A</span>{% endif %}</a>{% endfor %}</div>
+                        <div class="account-order-total"><span>Итого</span><b>{{ order.estimated_total|money }} {{ order.currency|currency_symbol }}</b></div>
+                        <details class="account-order-details"><summary>Состав и доставка</summary><div>{% for item in order.items.all %}<p><span>{{ item.product_title }} · {{ item.quantity }} шт.</span><b>{{ item.subtotal|money }} {{ item.currency|currency_symbol }}</b></p>{% endfor %}{% if order.discount_amount %}<p><span>Скидка{% if order.promo_code %} · {{ order.promo_code }}{% endif %}</span><b>−{{ order.discount_amount|money }} ₽</b></p>{% endif %}{% if order.delivery_method %}<p><span>{{ order.get_delivery_method_display }}</span><b>{{ order.delivery_cost|money }} ₽</b></p>{% endif %}<small>Адрес: {{ order.delivery_address }}{% if order.payment_method %} · Оплата: {{ order.get_payment_method_display }}{% endif %}</small></div></details>
+                        <div class="account-order-actions"><a class="button button-outline" href="{{ order.get_absolute_url }}">Подробнее</a><form method="post" action="{% url 'shop:order_repeat' order.pk %}">{% csrf_token %}<button class="button button-outline" type="submit">Повторить заказ</button></form></div>
+                    </article>
+                {% empty %}{% if not personal_orders %}<div class="account-empty"><h3>Заказов пока нет</h3><p>Оформите первый заказ, и он появится здесь.</p><a class="button button-dark" href="{% url 'shop:catalog' %}">Перейти в каталог</a></div>{% endif %}{% endfor %}
+                {% for order in personal_orders %}<article class="account-order-card personal"><header><div><b>Персональный заказ {{ order.number }}</b><span>от {{ order.created_at|date:'d.m.Y' }}</span></div><strong class="order-status status-{{ order.status }}">{{ order.get_status_display }}</strong></header><div class="personal-order-summary">{% for item in order.items.all %}<span>{{ item.brand }} — {{ item.product_name }}</span>{% endfor %}</div><a class="button button-outline" href="{{ order.get_absolute_url }}">Подробнее</a></article>{% endfor %}
+
+            {% elif active_tab == 'favorites' %}
+                <div class="account-section-heading"><div><p>Ваш выбор</p><h2>Избранное</h2></div></div>
+                {% if favorite_products %}<div class="product-grid account-favorite-grid">{% for product in favorite_products %}{% include 'shop/catalog/includes/product_card.html' %}{% endfor %}</div>{% else %}<div class="account-empty"><h3>Избранное пусто</h3><p>Нажмите на сердечко у вещи, чтобы сохранить её.</p><a class="button button-dark" href="{% url 'shop:catalog' %}">Перейти в каталог</a></div>{% endif %}
+
+            {% elif active_tab == 'addresses' %}
+                <div class="account-section-heading"><div><p>Доставка</p><h2>Адреса</h2></div></div>
+                {% if addresses %}<div class="address-grid">{% for address in addresses %}<article class="address-card"><header><b>{{ address.label }}</b>{% if address.is_default %}<span>Основной</span>{% endif %}</header><p>{{ address.full_address }}</p><div class="address-actions"><details><summary>Изменить</summary><form class="address-form" method="post" action="{% url 'shop:account_address_edit' address.pk %}">{% csrf_token %}<div class="form-field"><label>Название адреса</label><input name="label" value="{{ address.label }}" required></div><div class="address-form-row"><div class="form-field"><label>Город</label><input name="city" value="{{ address.city }}" required></div><div class="form-field"><label>Индекс</label><input name="postal_code" value="{{ address.postal_code }}"></div></div><div class="form-field"><label>Улица и дом</label><input name="street" value="{{ address.street }}" required></div><div class="form-field"><label>Квартира или офис</label><input name="apartment" value="{{ address.apartment }}"></div><label class="account-check"><input type="checkbox" name="is_default"{% if address.is_default %} checked{% endif %}><span>Сделать основным</span></label><button class="button button-dark" type="submit">Сохранить</button></form></details>{% if not address.is_default %}<form method="post" action="{% url 'shop:account_address_default' address.pk %}">{% csrf_token %}<button type="submit">Сделать основным</button></form>{% endif %}<form method="post" action="{% url 'shop:account_address_delete' address.pk %}">{% csrf_token %}<button type="submit">Удалить</button></form></div></article>{% endfor %}</div>{% else %}<p class="account-muted">Адресов пока нет. Добавьте адрес, и он будет доступен при оформлении заказа.</p>{% endif %}
+                <details class="new-address"{% if not addresses %} open{% endif %}><summary class="button button-outline">Добавить адрес</summary><form class="address-form" method="post" action="{% url 'shop:account_address_add' %}">{% csrf_token %}{% for field in address_form %}{% if field.name == 'is_default' %}<label class="account-check">{{ field }}<span>{{ field.label }}</span></label>{% else %}<div class="form-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}</div>{% endif %}{% endfor %}<button class="button button-dark" type="submit">Сохранить адрес</button></form></details>
+
+            {% else %}
+                <div class="account-section-heading"><div><p>Настройки аккаунта</p><h2>Данные профиля</h2></div><a href="{% url 'shop:account_password' %}">Сменить пароль</a></div>
+                <div class="verification-status {% if profile.email_verified %}verified{% else %}unverified{% endif %}"><div><b>E-mail {% if profile.email_verified %}подтверждён{% else %}не подтверждён{% endif %}</b><span>{{ request.user.email }}</span></div>{% if not profile.email_verified %}<a href="{% url 'shop:verify_email' %}">Подтвердить</a>{% endif %}</div>
+                <form method="post" class="account-form account-profile-form" novalidate>{% csrf_token %}{% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}{% if form.non_field_errors %}<div class="form-alert">{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}{% for field in form %}<div class="form-field{% if field.errors %} has-error{% endif %}"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.help_text %}<div class="field-help">{{ field.help_text|safe }}</div>{% endif %}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>{% endfor %}<button class="button button-dark" type="submit">Сохранить</button></form>
+                <div class="telegram-link-card"><div><b>{% if telegram_account and telegram_account.is_active %}Telegram подключён{% else %}Подключите Telegram{% endif %}</b><span>{% if telegram_account and telegram_account.is_active %}{% if telegram_account.username %}@{{ telegram_account.username }} · {% endif %}уведомления о заказах доступны в боте{% else %}Получайте уведомления о заказах и быстро связывайтесь с менеджером.{% endif %}</span></div>{% if bot_username %}<form method="post" action="{% url 'shop:telegram_link_start' %}">{% csrf_token %}<button class="button button-outline" type="submit">{% if telegram_account %}Перепривязать Telegram{% else %}Привязать Telegram{% endif %}</button></form>{% endif %}</div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

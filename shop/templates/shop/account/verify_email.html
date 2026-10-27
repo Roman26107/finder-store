@@ -1,0 +1,38 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Подтверждение e-mail — FINDER{% endblock %}
+{% block brand_styles %}<link rel="stylesheet" href="{% static 'shop/account/account.css' %}?v=20260921-2">{% endblock %}
+
+{% block content %}
+<section class="account-page">
+    <div class="account-card account-card-narrow">
+        <header class="account-heading">
+            <p>Подтверждение</p>
+            <h1>Проверьте почту</h1>
+            <span>Введите шестизначный код, отправленный на<br><b>{{ request.user.email }}</b></span>
+        </header>
+        <form method="post" class="account-form verification-form" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-field verification-code{% if field.errors %} has-error{% endif %}">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                </div>
+            {% endfor %}
+            <button class="button button-dark account-submit" type="submit">Подтвердить e-mail</button>
+        </form>
+        <div class="verification-resend">
+            <p>Не получили письмо?</p>
+            <form method="post" action="{% url 'shop:resend_email_verification' %}">
+                {% csrf_token %}
+                <button class="text-link" type="submit"{% if retry_seconds %} disabled title="Повторная отправка станет доступна позже"{% endif %}>
+                    {% if retry_seconds %}Повторить через {{ retry_seconds }} сек.{% else %}Отправить код повторно{% endif %}
+                </button>
+            </form>
+        </div>
+        <a class="verification-later" href="{% url 'shop:account' %}?tab=profile">Подтвердить позже</a>
+    </div>
+</section>
+{% endblock %}

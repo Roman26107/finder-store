@@ -1,0 +1,25 @@
+{% load shop_tags %}
+<section class="analytics-kpis analytics-kpis-five" aria-label="Показатели продаж и CRM">
+    <article><small>Новые лиды</small><b>{{ lead_new_count }}</b><span>Ждут контакта</span></article>
+    <article><small>В работе</small><b>{{ lead_work_count }}</b><span>Активные</span></article>
+    <article><small>Оплачено</small><b>{{ lead_paid_count }}</b><span>Лидов в продажу</span></article>
+    <article><small>Отказы</small><b>{{ lead_rejected_count }}</b><span>Закрытые потери</span></article>
+    <article><small>CR Lead → Sale</small><b>{{ lead_sale_cr }}%</b><span>Оплаты / лиды</span></article>
+</section>
+
+<div class="analytics-columns analytics-crm-lead">
+    <section class="control-panel"><div class="panel-heading"><div><span>CRM</span><h2>Воронка работы с клиентом</h2><p>Этап засчитывается по факту достижения milestone или статуса заказа.</p></div></div><ol class="analytics-funnel visual-funnel analytics-funnel-dense">{% for row in crm_pipeline %}<li><div><span>{{ row.label }}</span><b>{{ row.value }}</b></div><i style="--funnel-width:{{ row.percent }}%"></i></li>{% endfor %}</ol></section>
+    <section class="control-panel"><div class="panel-heading"><div><span>Потери</span><h2>Причины отказов</h2></div></div><div class="status-diagram">{% for row in loss_reasons %}<div><i style="--status-width:{{ row.percent }}%"></i><span>{{ row.label }}</span><b>{{ row.percent }}%</b></div>{% empty %}<p class="empty-note">Причины отказов за период не зафиксированы.</p>{% endfor %}</div></section>
+</div>
+
+<section class="control-panel">
+    <div class="panel-heading"><div><span>CRM</span><h2>Последние лиды</h2><p>Рабочая обработка остаётся в отдельном разделе «Заявки клиентов».</p></div><a href="{% url 'shop:control_requests' %}">Открыть заявки →</a></div>
+    <div class="analytics-table"><table data-sortable-table><thead><tr><th>ID / дата</th><th>First touch</th><th>Last touch</th><th>Товар</th><th>Клиент</th><th>Стоимость</th><th>Статус</th></tr></thead><tbody>{% for lead in leads %}<tr><td><a href="{% url 'shop:control_request_detail' lead.pk %}">{{ lead.number }}</a><small>{{ lead.created_at|date:'d.m.Y H:i' }}</small></td><td>{{ lead.first_source|default:'direct' }}<small>{{ lead.first_utm_campaign|default:'Без кампании' }}</small></td><td>{{ lead.source|default:'direct' }}<small>{{ lead.utm_campaign|default:'Без кампании' }}</small></td><td>{% with item=lead.items.first %}{{ item.brand|default:'—' }}<small>{{ item.product_name|default:'—' }}</small>{% endwith %}</td><td>{{ lead.customer_name }}<small>{% if lead.is_repeat_customer %}Повторный{% else %}Новый{% endif %}</small></td><td>{% if lead.estimated_value %}{{ lead.estimated_value|money }} ₽{% else %}—{% endif %}</td><td>{{ lead.get_lead_status_display }}{% if lead.loss_reason %}<small>{{ lead.get_loss_reason_display }}</small>{% endif %}</td></tr>{% empty %}<tr><td colspan="7">Лидов пока нет.</td></tr>{% endfor %}</tbody></table></div>
+</section>
+
+<div class="analytics-columns">
+    <details class="control-panel analytics-disclosure" open><summary><span>Персональный заказ</span><b>Просмотр → отправка</b><i>Свернуть / раскрыть</i></summary><ol class="analytics-funnel visual-funnel">{% for row in request_funnel %}<li><div><span>{{ row.label }}</span><b>{{ row.value }}</b></div><i style="--funnel-width:{{ row.percent }}%"></i></li>{% endfor %}</ol></details>
+    <details class="control-panel analytics-disclosure" open><summary><span>Checkout</span><b>Корзина → успешно</b><i>Брошено: {{ abandoned_carts }}</i></summary><ol class="analytics-funnel checkout-funnel">{% for label,value in checkout_stages %}<li><span>{{ label }}</span><b>{{ value }}</b></li>{% endfor %}</ol></details>
+</div>
+
+<details class="control-panel analytics-disclosure"><summary><span>CRM</span><b>Распределение текущих статусов</b><i>Раскрыть →</i></summary><div class="analytics-table"><table><thead><tr><th>Статус</th><th>Лидов</th></tr></thead><tbody>{% for row in lead_statuses %}<tr><td>{{ row.label }}</td><td>{{ row.total }}</td></tr>{% empty %}<tr><td colspan="2">Лидов пока нет.</td></tr>{% endfor %}</tbody></table></div></details>

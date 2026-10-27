@@ -1,0 +1,25 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+{% block title %}Избранное — FINDER{% endblock %}
+{% block brand_styles %}<link rel="stylesheet" href="{% static 'shop/css/catalog.css' %}?v=20260918-3">{% endblock %}
+{% block content %}
+<div class="page-width favorites-page" data-favorites-page>
+    <div class="favorites-heading">
+        <p class="hermes-eyebrow">Ваш выбор</p>
+        <h1>Избранное{% if favorite_count %} ({{ favorite_count }}){% endif %}</h1>
+    </div>
+    {% if favorite_products %}
+        <div class="product-grid product-grid-four" data-favorite-products>
+            {% for product in favorite_products %}
+                {% include 'shop/catalog/includes/product_card.html' %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state favorites-empty">
+            <h2>В избранном пока ничего нет</h2>
+            <p>Нажмите на сердце рядом с товаром, чтобы сохранить его здесь.</p>
+            <a class="button button-dark" href="{% url 'shop:catalog' %}">Перейти в каталог</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

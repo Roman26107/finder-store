@@ -1,0 +1,21 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Заказ оформлен — FINDER{% endblock %}
+{% block brand_styles %}<link rel="stylesheet" href="{% static 'shop/orders/orders.css' %}?v=20260926-1">{% endblock %}
+
+{% block content %}
+<section class="order-success-page">
+    <div class="order-success-card">
+        <span class="order-success-icon" aria-hidden="true">✓</span>
+        <p class="order-kicker">{{ order.number }}</p>
+        <h1>Ваш заказ оформлен</h1>
+        <p>Спасибо за заказ. Ваш личный менеджер свяжется с вами в ближайшее время, уточнит детали и подтвердит финальную стоимость.</p>
+        <p>Следить за статусом заказа можно в разделе «Мои заказы» в личном кабинете.</p>
+        <div class="order-success-actions">
+            <a class="button button-dark" href="{% url 'shop:orders' %}">Мои заказы</a>
+            <a class="button button-outline" href="{% url 'shop:catalog' %}">Продолжить покупки</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

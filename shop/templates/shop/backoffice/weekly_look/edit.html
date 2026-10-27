@@ -1,0 +1,21 @@
+{% extends 'shop/backoffice/base.html' %}
+{% block title %}Образ недели{% endblock %}
+{% block content %}
+<header class="control-page-heading heading-actions"><div><span>Оформление витрины</span><h1>Образ недели</h1><p>Выберите до четырёх вещей из каталога, поменяйте порядок и при необходимости загрузите собственное фото каждой вещи.</p></div><a class="control-button" href="{% url 'shop:home' %}" target="_blank" rel="noopener">Открыть витрину ↗</a></header>
+<form method="post" class="weekly-look-visibility">{% csrf_token %}<input type="hidden" name="action" value="toggle"><button class="control-button" type="submit">{% if look.is_visible %}Скрыть образ недели{% else %}Показать образ недели{% endif %}</button><span>Сейчас: {% if look.is_visible %}показывается{% else %}скрыт{% endif %}</span></form>
+<form method="post" enctype="multipart/form-data" class="banner-editor" data-banner-editor data-image-search-url="{% url 'shop:control_banner_image_search' %}">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="control-message error">{{ form.non_field_errors }}</div>{% endif %}
+    <section class="control-panel form-panel"><div class="panel-heading"><div><span>01</span><h2>Тексты и видимость</h2></div></div>
+        <div class="form-grid"><label class="wide banner-checkbox">{{ form.is_visible }} <span>{{ form.is_visible.label }}</span>{{ form.is_visible.errors }}</label>
+            {% for field in form %}{% if field.name != 'is_visible' %}<label class="wide"><span>{{ field.label }}</span>{{ field }}{{ field.errors }}</label>{% endif %}{% endfor %}
+        </div>
+    </section>
+    <section class="control-panel form-panel"><div class="panel-heading"><div><span>02</span><h2>Вещи и фотографии</h2><p>Выберите фотографию товара из каталога; собственное фото заменит её только в этом блоке. Если вещи не выбраны, показывается прежняя автоматическая подборка.</p></div><b><span data-media-count>0</span> / 4</b></div>
+        {{ item_formset.management_form }}
+        {% if item_formset.non_form_errors %}<div class="control-message error">{{ item_formset.non_form_errors }}</div>{% endif %}
+        <div class="media-manager" data-media-manager data-media-limit="4" data-banner-media><div class="media-formset" data-media-list>{% for item_form in item_formset %}{% include 'shop/backoffice/weekly_look/item_row.html' %}{% endfor %}</div><template data-media-empty>{% include 'shop/backoffice/weekly_look/item_row.html' with item_form=item_formset.empty_form %}</template><button class="control-button media-add-button" type="button" data-media-add><span>+</span> Добавить вещь</button></div>
+    </section>
+    <div class="banner-editor-actions"><button class="control-button dark" type="submit">Сохранить образ недели</button></div>
+</form>
+{% endblock %}

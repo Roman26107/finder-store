@@ -1,0 +1,37 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Вход — FINDER{% endblock %}
+{% block brand_styles %}<link rel="stylesheet" href="{% static 'shop/account/account.css' %}?v=20260921-2">{% endblock %}
+
+{% block content %}
+<section class="account-page">
+    <div class="account-card account-card-narrow">
+        <header class="account-heading">
+            <p>Личный кабинет</p>
+            <h1>Войти</h1>
+            <span>Войдите, чтобы управлять заказами, избранным и личными данными.</span>
+        </header>
+
+        <form method="post" class="account-form" novalidate>
+            {% csrf_token %}
+            {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+            {% if form.non_field_errors %}<div class="form-alert" role="alert">{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+            {% for field in form %}
+                <div class="form-field{% if field.errors %} has-error{% endif %}">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                </div>
+            {% endfor %}
+            <div class="account-form-assist"><a href="{% url 'shop:password_reset' %}">Забыли пароль?</a></div>
+            <button class="button button-dark account-submit" type="submit">Войти</button>
+        </form>
+
+        <div class="account-switch">
+            <span>Ещё нет аккаунта?</span>
+            <a href="{% url 'shop:register' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Зарегистрироваться</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

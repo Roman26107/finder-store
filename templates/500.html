@@ -1,0 +1,10 @@
+{% extends "errors/base.html" %}
+{% block error_code %}500{% endblock %}
+{% block error_heading %}Что-то пошло<br>не так{% endblock %}
+{% block error_description %}
+    <p>На нашей стороне произошла непредвиденная ошибка. Мы уже можем видеть проблему — попробуйте обновить страницу чуть позже.</p>
+{% endblock %}
+{% block error_actions %}
+    <a class="error-button error-button-dark" href="{{ retry_url }}">Попробовать снова <span>↻</span></a>
+    <a class="error-button" href="/">На главную</a>
+{% endblock %}

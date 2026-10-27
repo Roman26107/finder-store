@@ -1,0 +1,38 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n admin_urls static %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'admin:index' %}">{% translate 'Home' %}</a> &rsaquo; <a href="{% url 'admin:shop_product_changelist' %}">Товары</a> &rsaquo; Импорт ZIP</div>{% endblock %}
+{% block content %}
+<div class="import-card">
+    <h1>Импорт товаров из ZIP</h1>
+    <p>Инструмент находит JSON-карточки на любом уровне архива, импортирует товары и распаковывает изображения, указанные в <code>images[].local_path</code> или URL-полях.</p>
+    <ul>
+        <li>Допускается общая вложенная папка внутри архива.</li>
+        <li>Новые товары создаются, существующие обновляются по <code>sku</code>.</li>
+        <li>Изображения сохраняются в защищённую папку <code>media/products/</code>.</li>
+        <li>Небезопасные пути и подозрительные ZIP-архивы автоматически блокируются.</li>
+        <li>Максимальный размер загружаемого архива — 200 МБ.</li>
+    </ul>
+
+    {% for report in reports %}
+    <section class="report">
+        <h3>{{ report.archive_name }}</h3>
+        <div class="report-grid">
+            <div class="report-stat"><b>{{ report.json_files }}</b><small>JSON-файлов</small></div>
+            <div class="report-stat"><b>{{ report.cards }}</b><small>карточек</small></div>
+            <div class="report-stat"><b>{{ report.created }}</b><small>создано</small></div>
+            <div class="report-stat"><b>{{ report.updated }}</b><small>обновлено</small></div>
+            <div class="report-stat"><b>{{ report.image_files }}</b><small>фото в ZIP</small></div>
+            <div class="report-stat"><b>{{ report.images_attached }}</b><small>фото привязано</small></div>
+        </div>
+        {% if report.warnings %}<div class="report-warnings"><h4>Предупреждения</h4><ul>{% for warning in report.warnings %}<li>{{ warning }}</li>{% endfor %}</ul></div>{% endif %}
+        {% if report.errors %}<div class="report-errors"><h4>Ошибки</h4><ul>{% for error in report.errors %}<li>{{ error }}</li>{% endfor %}</ul></div>{% endif %}
+    </section>
+    {% endfor %}
+
+    <form method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}
+        {% if form.non_field_errors %}{{ form.non_field_errors }}{% endif %}
+        {% for field in form %}<div class="form-row"><div>{{ field.errors }}{{ field.label_tag }}{{ field }}{% if field.help_text %}<div class="help">{{ field.help_text }}</div>{% endif %}</div></div>{% endfor %}
+        <div class="submit-row"><input type="submit" value="Распаковать и импортировать" class="default"><a href="{% url 'admin:shop_product_changelist' %}" class="closelink">Вернуться к товарам</a></div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'shop/backoffice/base.html' %}
+{% load shop_tags %}
+{% block title %}Обзор{% endblock %}
+{% block content %}
+<header class="control-page-heading"><div><span>Рабочее пространство</span><h1>Добрый день, {{ request.user.first_name|default:request.user.username }}</h1><p>Главные показатели магазина и задачи, которые требуют внимания.</p></div></header>
+<section class="metric-grid">
+    {% if perms.shop.view_order %}<a class="metric-card accent" href="{% url 'shop:control_orders' %}?status=new"><span>Новые заказы</span><strong>{{ new_order_count }}</strong><small>Открыто всего: {{ open_order_count }}</small><i>→</i></a>{% endif %}
+    {% if perms.shop.view_productrequest %}<a class="metric-card" href="{% url 'shop:control_requests' %}?status=new"><span>Новые заявки</span><strong>{{ new_request_count }}</strong><small>В работе: {{ open_request_count }}</small><i>→</i></a>{% endif %}
+    {% if perms.shop.view_product %}<a class="metric-card" href="{% url 'shop:control_products' %}"><span>Товаров</span><strong>{{ product_count }}</strong><small>Опубликовано: {{ published_count }}</small><i>→</i></a>{% endif %}
+    {% if perms.shop.view_product %}<a class="metric-card warning" href="{% url 'shop:control_products' %}?stock=out"><span>Нет в наличии</span><strong>{{ out_of_stock_count }}</strong><small>Проверьте актуальность</small><i>→</i></a>{% endif %}
+    {% if perms.auth.view_user %}<a class="metric-card" href="{% url 'shop:control_users' %}"><span>Пользователи</span><strong>{{ customer_count }}</strong><small>Профили и история клиентов</small><i>→</i></a>{% endif %}
+</section>
+<div class="dashboard-columns">
+    {% if perms.shop.view_order %}<section class="control-panel"><div class="panel-heading"><div><span>Продажи</span><h2>Последние заказы</h2></div><a href="{% url 'shop:control_orders' %}">Все заказы →</a></div>
+        <div class="compact-list">{% for order in recent_orders %}<a href="{% url 'shop:control_order_detail' order.pk %}"><div><b>{{ order.number }}</b><span>{{ order.customer_name }}</span></div><div><strong>{{ order.estimated_total|money }} {{ order.currency }}</strong><em class="status status-{{ order.status }}">{{ order.status|status_icon }} {{ order.get_status_display }}</em></div></a>{% empty %}<p class="empty-note">Заказов пока нет.</p>{% endfor %}</div>
+    </section>{% endif %}
+    {% if perms.shop.view_productrequest %}<section class="control-panel"><div class="panel-heading"><div><span>Персональный поиск</span><h2>Последние заявки</h2></div><a href="{% url 'shop:control_requests' %}">Все заявки →</a></div>
+        <div class="compact-list">{% for item in recent_requests %}<a href="{% url 'shop:control_request_detail' item.pk %}"><div><b>{{ item.number }}</b><span>{{ item.customer_name }}</span></div><div><strong>{{ item.items.all|length }} поз.</strong><em class="status status-{{ item.status }}">{{ item.status|status_icon }} {{ item.get_status_display }}</em></div></a>{% empty %}<p class="empty-note">Заявок пока нет.</p>{% endfor %}</div>
+    </section>{% endif %}
+</div>
+<section class="quick-actions"><div class="panel-heading"><div><span>Быстрый доступ</span><h2>Частые действия</h2></div></div><div>{% if perms.shop.add_product %}<a href="{% url 'shop:control_import' %}"><i>⇧</i><b>Импортировать товары</b><span>JSON или ZIP с изображениями</span></a>{% endif %}{% if perms.shop.view_product %}<a href="{% url 'shop:control_products' %}?visibility=hidden"><i>◇</i><b>Скрытые товары</b><span>Проверить неопубликованные карточки</span></a>{% endif %}{% if perms.shop.change_product %}<a href="{% url 'shop:control_dictionaries' %}"><i>＋</i><b>Дополнить справочники</b><span>Бренды, цвета, материалы и размеры</span></a>{% elif perms.shop.change_pricingrule %}<a href="{% url 'shop:control_pricing' %}"><i>₽</i><b>Настроить стоимость</b><span>Курсы валют и наценки</span></a>{% endif %}</div></section>
+{% endblock %}

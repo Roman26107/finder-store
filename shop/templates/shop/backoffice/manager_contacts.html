@@ -1,0 +1,17 @@
+{% extends 'shop/backoffice/base.html' %}
+{% block title %}Способы связи{% endblock %}
+{% block content %}
+<header class="control-page-heading"><div><span>Telegram и поддержка</span><h1>Способы связи</h1><p>Контакты личного менеджера, которые бот показывает покупателям. Можно добавить любой текст и необязательную HTTP(S)-ссылку.</p></div></header>
+<section class="control-panel pricing-panel">
+    <div class="panel-heading"><div><span>Контакты</span><h2>Телефон, Telegram, WhatsApp, почта и другие способы</h2></div></div>
+    <form method="post">
+        {% csrf_token %}
+        {{ formset.management_form }}
+        {{ formset.non_form_errors }}
+        <div class="control-table-wrap"><table class="control-table"><thead><tr><th>Порядок</th><th>Тип</th><th>Название</th><th>Данные</th><th>Ссылка</th><th>Показывать</th><th>Удалить</th></tr></thead><tbody>
+        {% for form in formset %}<tr><td>{{ form.id }}{{ form.position }}{{ form.position.errors }}</td><td>{{ form.kind }}{{ form.kind.errors }}</td><td>{{ form.label }}{{ form.label.errors }}</td><td>{{ form.value }}{{ form.value.errors }}</td><td>{{ form.url }}{{ form.url.errors }}</td><td>{{ form.is_active }}{{ form.is_active.errors }}</td><td>{{ form.DELETE }}</td></tr>{% endfor %}
+        </tbody></table></div>
+        {% if can_change %}<button class="control-button dark" type="submit">Сохранить способы связи</button>{% else %}<p class="permission-note">Доступен только просмотр.</p>{% endif %}
+    </form>
+</section>
+{% endblock %}

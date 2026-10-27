@@ -1,0 +1,10 @@
+{% extends "errors/base.html" %}
+{% block error_code %}404{% endblock %}
+{% block error_heading %}Страница<br>не найдена{% endblock %}
+{% block error_description %}
+    <p>Такой страницы больше нет или адрес был введён неверно. Продолжите знакомство с коллекцией FINDER.</p>
+{% endblock %}
+{% block error_actions %}
+    <a class="error-button error-button-dark" href="/catalog/">Смотреть каталог <span>→</span></a>
+    <a class="error-button" href="/">На главную</a>
+{% endblock %}

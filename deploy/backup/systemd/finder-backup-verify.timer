@@ -1,0 +1,12 @@
+[Unit]
+Description=Deep-check FINDER backups weekly
+
+[Timer]
+OnCalendar=Sun *-*-* 05:30:00
+RandomizedDelaySec=45m
+AccuracySec=1m
+Persistent=true
+Unit=finder-backup-verify.service
+
+[Install]
+WantedBy=timers.target

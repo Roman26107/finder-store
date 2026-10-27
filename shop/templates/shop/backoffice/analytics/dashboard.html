@@ -1,0 +1,21 @@
+{% extends 'shop/backoffice/base.html' %}
+{% load static shop_tags %}
+{% block title %}Аналитика{% endblock %}
+{% block content %}
+<div class="analytics-page">
+    {% include 'shop/backoffice/analytics/includes/page_header.html' %}
+    {% if analytics_section == 'marketing' %}
+        {% include 'shop/backoffice/analytics/sections/marketing.html' %}
+    {% elif analytics_section == 'catalog' %}
+        {% include 'shop/backoffice/analytics/sections/catalog.html' %}
+    {% elif analytics_section == 'behavior' %}
+        {% include 'shop/backoffice/analytics/sections/behavior.html' %}
+    {% elif analytics_section == 'sales' %}
+        {% include 'shop/backoffice/analytics/sections/sales.html' %}
+    {% elif analytics_section == 'finance' %}
+        {% include 'shop/backoffice/analytics/sections/finance.html' %}
+    {% else %}
+        {% include 'shop/backoffice/analytics/sections/overview.html' %}
+    {% endif %}
+</div>
+{% endblock %}

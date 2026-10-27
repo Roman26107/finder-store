@@ -1,0 +1,57 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Регистрация — FINDER{% endblock %}
+{% block brand_styles %}<link rel="stylesheet" href="{% static 'shop/account/account.css' %}?v=20260921-2">{% endblock %}
+
+{% block content %}
+<section class="account-page">
+    <div class="account-card">
+        <header class="account-heading">
+            <p>Новый аккаунт</p>
+            <h1>Регистрация</h1>
+            <span>Создайте аккаунт магазина. Telegram можно подключить как дополнительный способ получать уведомления.</span>
+        </header>
+
+        <form method="post" class="account-form account-form-grid" novalidate>
+            {% csrf_token %}
+            {{ form.telegram_registration_token }}
+            {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+            {% if form.non_field_errors %}<div class="form-alert form-grid-wide" role="alert">{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+            {% for field in form %}
+                {% if field.name != 'telegram_registration_token' and field.name != 'telegram_code' %}
+                <div class="form-field{% if field.name == 'email' or field.name == 'phone' or field.name == 'gender' or field.name == 'password1' or field.name == 'password2' %} form-grid-wide{% endif %}{% if field.errors %} has-error{% endif %}">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<div class="field-help">{{ field.help_text|safe }}</div>{% endif %}
+                    {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                </div>
+                {% endif %}
+                {% if field.name == 'phone' and bot_username %}
+                    <div class="telegram-registration-field form-grid-wide{% if form.telegram_code.value %} selected{% endif %}">
+                        <div class="telegram-registration-copy">
+                            <span class="telegram-registration-label">Telegram (необязательно)</span>
+                            <small>Откройте бота, получите шестизначный код и введите его здесь. Аккаунт сайта создастся только после отправки всей формы.</small>
+                        </div>
+                        <a class="button button-outline telegram-registration-toggle" href="{{ telegram_bot_url }}" target="_blank" rel="noopener">Запустить бота</a>
+                        <div class="form-field telegram-registration-code{% if form.telegram_code.errors %} has-error{% endif %}">
+                            <label for="{{ form.telegram_code.id_for_label }}">{{ form.telegram_code.label }}</label>
+                            {{ form.telegram_code }}
+                            {% for error in form.telegram_code.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <div class="registration-actions form-grid-wide">
+                <button class="button button-dark account-submit" type="submit">Создать аккаунт</button>
+                {% if bot_username %}<p>Telegram подключится только при корректном коде. Без кода аккаунт будет создан без Telegram. Подтверждение e-mail остаётся обязательным.</p>{% endif %}
+            </div>
+        </form>
+
+        <div class="account-switch">
+            <span>Уже зарегистрированы?</span>
+            <a href="{% url 'shop:login' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Войти</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'shop/base.html' %}
+{% load shop_tags %}
+{% block title %}Корзина — FINDER{% endblock %}
+{% block content %}
+<div class="page-width cart-page">
+    <h1>Корзина{% if cart_count %} ({{ cart_count }}){% endif %}</h1>
+    {% if cart_items %}
+    <div class="cart-layout">
+        <div class="cart-items">
+            {% for item in cart_items %}<article class="cart-item">
+                <a class="cart-item-image" href="{{ item.product.get_absolute_url }}">{% with image=item.product.primary_image %}{% if image and image.preview_url %}<img src="{{ image.preview_url }}" alt="{{ item.product.title }}" loading="lazy" decoding="async">{% else %}<span class="image-placeholder">A</span>{% endif %}{% endwith %}</a>
+                <div class="cart-item-info">
+                    <small class="cart-item-brand">{{ item.product.catalog_brand_name|default:item.product.brand }}</small>
+                    <a href="{{ item.product.get_absolute_url }}"><h2>{{ item.product.title }}</h2></a>
+                    <dl class="cart-item-meta">
+                        <div><dt>Цвет</dt><dd>{{ item.product.current_color|default:'Не указан' }}</dd></div>
+                        <div><dt>Размер</dt><dd>{{ item.selected_size|default:'Не указан' }}</dd></div>
+                    </dl>
+                    <div class="cart-item-price"><span>Цена</span><strong>{% if item.unit_price is not None %}{{ item.unit_price|money }} ₽{% else %}Цена уточняется{% endif %}</strong></div>
+                </div>
+                <form class="quantity-form" method="post" action="{% url 'shop:cart_update' item.product.pk %}">{% csrf_token %}<span class="cart-control-label">Количество</span><div><button type="button" aria-label="Уменьшить количество" data-quantity-minus>−</button><input type="number" name="quantity" min="0" max="99" value="{{ item.quantity }}" aria-label="Количество"><button type="button" aria-label="Увеличить количество" data-quantity-plus>+</button></div></form>
+                <div class="cart-item-actions"><form class="cart-remove-form" method="post" action="{% url 'shop:cart_remove' item.product.pk %}">{% csrf_token %}<button class="remove-item" type="submit" aria-label="Удалить {{ item.product.title }}"><span aria-hidden="true">×</span><b>Удалить</b></button></form></div>
+            </article>{% endfor %}
+        </div>
+        <aside class="order-summary"><h2>Сумма заказа</h2><div class="summary-total"><span>Стоимость товаров</span><b>{{ cart_total|money }} ₽</b></div>{% if unavailable_prices %}<p class="estimate-note">Для части товаров рублёвая цена пока не рассчитана. Оформление будет доступно после обновления курса валют.</p>{% else %}<p class="estimate-note">Это предварительная стоимость заказа. Она может измениться из-за курса валют, стоимости доставки и актуальной цены в бутике. Финальную сумму подтвердит ваш личный менеджер.</p>{% endif %}<a class="button button-dark{% if unavailable_prices %} disabled{% endif %}" href="{% if unavailable_prices %}#{% else %}{% url 'shop:checkout' %}{% endif %}"{% if unavailable_prices %} aria-disabled="true"{% endif %}>Оформить заказ</a><a class="button button-outline" href="{% url 'shop:catalog' %}">Продолжить покупки</a></aside>
+    </div>
+    {% else %}<div class="empty-state cart-empty"><h2>Ваша корзина пуста</h2><p>Загляните в каталог — возможно, там уже ждёт идеальная вещь.</p><a class="button button-dark" href="{% url 'shop:catalog' %}">Перейти в каталог</a></div>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,153 @@
+# POST-лимиты не расходуются на безопасное открытие формы через GET.
+map $request_method $write_limit_key {
+    default "";
+    POST $binary_remote_addr;
+    PUT $binary_remote_addr;
+    PATCH $binary_remote_addr;
+}
+
+# В проекте нет отдельного /api/search: поиск и фильтры работают на страницах
+# каталога. Пустой ключ не занимает память и не ограничивается.
+map $uri $search_limit_key {
+    default "";
+    ~^/(?:catalog|collection|stores(?:/.*)?)/?$ $binary_remote_addr;
+}
+
+limit_req_zone $binary_remote_addr zone=site_per_ip:10m rate=15r/s;
+limit_req_zone $server_name zone=site_total:1m rate=200r/s;
+limit_req_zone $binary_remote_addr zone=api_limit:10m rate=20r/s;
+limit_req_zone $write_limit_key zone=auth_limit:10m rate=5r/m;
+limit_req_zone $write_limit_key zone=form_limit:10m rate=2r/m;
+limit_req_zone $binary_remote_addr zone=analytics_limit:10m rate=5r/s;
+limit_req_zone $search_limit_key zone=search_limit:10m rate=5r/s;
+limit_req_zone $binary_remote_addr zone=admin_limit:10m rate=10r/s;
+limit_req_zone $binary_remote_addr zone=health_limit:1m rate=2r/s;
+limit_conn_zone $binary_remote_addr zone=conn_per_ip:10m;
+
+upstream finder_web {
+    server web:8000;
+    keepalive 32;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name ${DOMAIN} www.${DOMAIN};
+    client_max_body_size 100m;
+    client_header_timeout 10s;
+    client_body_timeout 15s;
+    send_timeout 30s;
+    keepalive_timeout 30s;
+    keepalive_requests 500;
+    reset_timedout_connection on;
+    limit_req_status 429;
+    limit_conn_status 429;
+    limit_req_log_level warn;
+    limit_conn_log_level warn;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location /static/ {
+        alias /var/www/static/;
+        access_log off;
+        expires 30d;
+        add_header Cache-Control "public, max-age=2592000, immutable";
+        limit_conn conn_per_ip 30;
+    }
+
+    location /media/ {
+        alias /var/www/media/;
+        access_log off;
+        expires 7d;
+        add_header Cache-Control "public, max-age=604800";
+        limit_conn conn_per_ip 30;
+    }
+
+    location ^~ /api/ {
+        client_max_body_size 2m;
+        limit_req zone=api_limit burst=40 nodelay;
+        include /etc/nginx/finder-templates/protected-proxy.conf;
+    }
+
+    location = /account/login/ {
+        client_max_body_size 64k;
+        limit_req zone=auth_limit burst=3 nodelay;
+        include /etc/nginx/finder-templates/protected-proxy.conf;
+    }
+
+    location = /account/admin-verification/ {
+        client_max_body_size 64k;
+        limit_req zone=auth_limit burst=3 nodelay;
+        include /etc/nginx/finder-templates/protected-proxy.conf;
+    }
+
+    location = /account/password-reset/ {
+        client_max_body_size 64k;
+        limit_req zone=auth_limit burst=2 nodelay;
+        include /etc/nginx/finder-templates/protected-proxy.conf;
+    }
+
+    location = /account/register/ {
+        client_max_body_size 128k;
+        limit_req zone=auth_limit burst=3 nodelay;
+        include /etc/nginx/finder-templates/protected-proxy.conf;
+    }
+
+    location = /account/verify-email/ {
+        client_max_body_size 64k;
+        limit_req zone=auth_limit burst=3 nodelay;
+        include /etc/nginx/finder-templates/protected-proxy.conf;
+    }
+
+    location = /account/verify-email/resend/ {
+        client_max_body_size 64k;
+        limit_req zone=auth_limit burst=1 nodelay;
+        include /etc/nginx/finder-templates/protected-proxy.conf;
+    }
+
+    location = /request-product/ {
+        client_max_body_size 256k;
+        limit_req zone=form_limit burst=1 nodelay;
+        include /etc/nginx/finder-templates/protected-proxy.conf;
+    }
+
+    location = /cart/checkout/ {
+        client_max_body_size 128k;
+        limit_req zone=form_limit burst=1 nodelay;
+        include /etc/nginx/finder-templates/protected-proxy.conf;
+    }
+
+    location = /analytics/events/ {
+        client_max_body_size 128k;
+        limit_req zone=analytics_limit burst=10 nodelay;
+        include /etc/nginx/finder-templates/protected-proxy.conf;
+    }
+
+    location = /healthz/ {
+        limit_req zone=health_limit burst=2 nodelay;
+        include /etc/nginx/finder-templates/protected-proxy.conf;
+    }
+
+    location ^~ /control/ {
+        limit_req zone=admin_limit burst=20 nodelay;
+        include /etc/nginx/finder-templates/protected-proxy.conf;
+    }
+
+    location ^~ /admin/ {
+        limit_req zone=admin_limit burst=20 nodelay;
+        include /etc/nginx/finder-templates/protected-proxy.conf;
+    }
+
+    # Не передаём в Django массовые сканирования WordPress/PHP и секретных файлов.
+    location ~* ^/(?:\.env(?:\.|$)|\.git(?:/|$)|\.svn(?:/|$)|wp-admin(?:/|$)|wp-login\.php$|xmlrpc\.php$|phpmyadmin(?:/|$)) {
+        access_log off;
+        return 404;
+    }
+
+    location / {
+        client_max_body_size 10m;
+        include /etc/nginx/finder-templates/protected-proxy.conf;
+    }
+}

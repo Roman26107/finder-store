@@ -1,0 +1,39 @@
+{% load shop_tags %}
+<section class="analytics-kpis analytics-kpis-compact" aria-label="Главные показатели бизнеса">
+    <article><small>Посетители</small><b>{{ unique_visitors }}</b><span>Уникальные за период</span></article>
+    <article><small>Лиды</small><b>{{ lead_count }}</b><span>Все новые заявки</span></article>
+    <article><small>CR в лид</small><b>{{ lead_cr }}%</b><span>Лиды / посетители</span></article>
+    <article><small>Заказы</small><b>{{ order_count }}</b><span>Оплаченные</span></article>
+    <article><small>Выручка</small><b>{{ revenue|money }} ₽</b><span>По дате оплаты</span></article>
+    <article><small>Прибыль</small><b>{% if net_profit is not None %}{{ net_profit|money }} ₽{% else %}—{% endif %}</b><span>{% if net_profit is None %}Нужны полные расходы{% else %}Итоговая{% endif %}</span></article>
+    <article><small>CPL</small><b>{% if cpl is not None %}{{ cpl|money }} ₽{% else %}—{% endif %}</b><span>Расход / лиды</span></article>
+    <article><small>CAC</small><b>{% if cac is not None %}{{ cac|money }} ₽{% else %}—{% endif %}</b><span>Расход / клиенты</span></article>
+</section>
+
+{{ overview_charts.traffic|json_script:'analytics-overview-traffic' }}
+{{ overview_charts.leads|json_script:'analytics-overview-leads' }}
+{{ overview_charts.sales|json_script:'analytics-overview-sales' }}
+{{ overview_charts.revenue|json_script:'analytics-overview-revenue' }}
+<section class="control-panel analytics-chart-panel analytics-chart-wide">
+    <div class="panel-heading">
+        <div><span>Динамика</span><h2>Что меняется в бизнесе</h2></div>
+        <nav class="analytics-metric-switch" aria-label="Показатель графика">
+            <button type="button" class="active" data-chart-switch="analytics-overview-traffic">Трафик</button>
+            <button type="button" data-chart-switch="analytics-overview-leads">Лиды</button>
+            <button type="button" data-chart-switch="analytics-overview-sales">Продажи</button>
+            <button type="button" data-chart-switch="analytics-overview-revenue">Выручка</button>
+        </nav>
+    </div>
+    <div class="analytics-chart-wrap line-chart"><canvas data-analytics-chart="line" data-chart-source="analytics-overview-traffic" data-switchable-chart aria-label="График динамики"></canvas><div class="chart-tooltip" data-chart-tooltip hidden></div></div>
+</section>
+
+<section class="control-panel attention-panel analytics-attention-compact">
+    <div class="panel-heading"><div><span>Операционный контроль</span><h2>Требует внимания</h2></div></div>
+    <ul class="attention-list">{% for item in attention_items|slice:':5' %}<li class="{{ item.level }}"><i></i><span>{{ item.text }}</span></li>{% empty %}<li class="success"><i></i><span>Критичных отклонений по доступным данным нет.</span></li>{% endfor %}</ul>
+</section>
+
+<div class="analytics-top-grid">
+    <section class="control-panel analytics-top-list"><div class="panel-heading"><div><span>TOP-5</span><h2>Источники трафика</h2></div><a href="{% url 'shop:control_analytics_marketing' %}{% if analytics_query %}?{{ analytics_query }}{% endif %}">Подробнее →</a></div><ol>{% for row in sources|slice:':5' %}<li><span>{{ row.source }}{% if row.medium %} / {{ row.medium }}{% endif %}</span><b>{{ row.visitors }}</b></li>{% empty %}<li class="empty-note">Нет данных</li>{% endfor %}</ol></section>
+    <section class="control-panel analytics-top-list"><div class="panel-heading"><div><span>TOP-5</span><h2>Бренды</h2></div><a href="{% url 'shop:control_analytics_catalog' %}{% if analytics_query %}?{{ analytics_query }}{% endif %}">Подробнее →</a></div><ol>{% for row in top_brands|slice:':5' %}<li><span>{{ row.brand }}</span><b>{{ row.views }}</b></li>{% empty %}<li class="empty-note">Нет данных</li>{% endfor %}</ol></section>
+    <section class="control-panel analytics-top-list"><div class="panel-heading"><div><span>TOP-5</span><h2>Товары</h2></div><a href="{% url 'shop:control_analytics_catalog' %}{% if analytics_query %}?{{ analytics_query }}{% endif %}">Подробнее →</a></div><ol>{% for row in top_products|slice:':5' %}<li><a href="{% url 'shop:control_product_edit' row.product_id %}">{{ row.product__title }}</a><b>{{ row.views }}</b></li>{% empty %}<li class="empty-note">Нет данных</li>{% endfor %}</ol></section>
+</div>

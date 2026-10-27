@@ -1,0 +1,12 @@
+[Unit]
+Description=Run FINDER PostgreSQL backup every two hours
+
+[Timer]
+OnCalendar=*-*-* 00/2:15:00
+RandomizedDelaySec=5m
+AccuracySec=1m
+Persistent=true
+Unit=finder-database-backup.service
+
+[Install]
+WantedBy=timers.target

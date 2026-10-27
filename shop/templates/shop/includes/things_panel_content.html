@@ -1,0 +1,52 @@
+{% load shop_tags %}
+<section class="things-panel-tab{% if active_tab|default:'cart' == 'cart' %} active{% endif %}" data-things-content="cart">
+    {% if cart_items %}
+        <div class="things-items">
+            {% for item in cart_items %}
+                <article class="things-item">
+                    <a class="things-item-image" href="{{ item.product.get_absolute_url }}">
+                        {% with image=item.product.primary_image %}{% if image and image.preview_url %}<img src="{{ image.preview_url }}" alt="{{ item.product.title }}" loading="lazy" decoding="async">{% else %}<span class="image-placeholder">A</span>{% endif %}{% endwith %}
+                    </a>
+                    <div class="things-item-copy">
+                        <small>{{ item.product.catalog_brand_name|default:item.product.brand }}</small>
+                        <a href="{{ item.product.get_absolute_url }}"><b>{{ item.product.title }}</b></a>
+                        {% if item.selected_size %}<span>Размер {{ item.selected_size }}</span>{% endif %}
+                        <div class="things-item-row">
+                            <form class="things-quantity" method="post" action="{% url 'shop:cart_update' item.product.pk %}" data-things-action>{% csrf_token %}<button type="submit" name="quantity" value="{{ item.quantity|add:'-1' }}" aria-label="Уменьшить количество">−</button><span>{{ item.quantity }}</span><button type="submit" name="quantity" value="{{ item.quantity|add:'1' }}" aria-label="Увеличить количество">+</button></form>
+                            <strong>{% if item.subtotal is not None %}{{ item.subtotal|money }} ₽{% else %}Цена уточняется{% endif %}</strong>
+                        </div>
+                        <form method="post" action="{% url 'shop:cart_remove' item.product.pk %}" data-things-action>{% csrf_token %}<button class="things-link" type="submit">Удалить</button></form>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+        <footer class="things-panel-foot">
+            <div><span>Итого</span><b>{{ cart_total|money }} ₽</b></div>
+            {% if unavailable_prices %}<a class="button button-dark disabled" href="{% url 'shop:cart' %}">Проверить корзину</a>{% else %}<a class="button button-dark" href="{% url 'shop:checkout' %}">Оформить заказ</a>{% endif %}
+            <small>Финальную стоимость и условия доставки подтвердит менеджер.</small>
+        </footer>
+    {% else %}
+        <div class="things-empty"><h3>В корзине пока пусто</h3><p>Выберите вещи из коллекции.</p><a class="button button-dark" href="{% url 'shop:catalog' %}">Перейти в каталог</a></div>
+    {% endif %}
+</section>
+
+<section class="things-panel-tab" data-things-content="favorites" hidden>
+    {% if favorite_products %}
+        <div class="things-items">
+            {% for product in favorite_products %}
+                <article class="things-item">
+                    <a class="things-item-image" href="{{ product.get_absolute_url }}">{% with image=product.primary_image %}{% if image and image.preview_url %}<img src="{{ image.preview_url }}" alt="{{ product.title }}" loading="lazy" decoding="async">{% else %}<span class="image-placeholder">A</span>{% endif %}{% endwith %}</a>
+                    <div class="things-item-copy">
+                        <small>{{ product.catalog_brand_name|default:product.brand }}</small>
+                        <a href="{{ product.get_absolute_url }}"><b>{{ product.title }}</b></a>
+                        <strong>{% if product.display_price is not None %}{{ product.display_price|money }} ₽{% else %}Цена уточняется{% endif %}</strong>
+                        <div class="things-favorite-actions"><a class="things-link strong" href="{{ product.get_absolute_url }}">Выбрать размер</a><form method="post" action="{% url 'shop:favorite_toggle' product.pk %}" data-favorite-form data-product-id="{{ product.pk }}" data-things-action>{% csrf_token %}<input type="hidden" name="next" value="{% url 'shop:favorites' %}"><button class="things-link" type="submit" data-favorite-button>Удалить</button></form></div>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+        <footer class="things-panel-foot"><a class="button button-outline" href="{% url 'shop:favorites' %}">Открыть всё избранное</a></footer>
+    {% else %}
+        <div class="things-empty"><h3>Избранное пусто</h3><p>Нажмите на сердечко у вещи, чтобы сохранить её.</p><a class="button button-dark" href="{% url 'shop:catalog' %}">Перейти в каталог</a></div>
+    {% endif %}
+</section>

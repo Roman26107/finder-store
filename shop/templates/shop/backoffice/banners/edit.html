@@ -1,0 +1,29 @@
+{% extends 'shop/backoffice/base.html' %}
+{% block title %}{{ banner }}{% endblock %}
+{% block content %}
+<header class="control-page-heading heading-actions"><div><span>Оформление витрины</span><h1>{{ banner }}</h1><p>Можно выбрать фотографии товаров из каталога или загрузить собственные файлы.</p></div><div class="heading-buttons"><a class="control-button" href="{% url 'shop:control_banners' %}">Все баннеры</a><a class="control-button" href="{% url 'shop:home' %}" target="_blank">Открыть витрину ↗</a></div></header>
+<form method="post" enctype="multipart/form-data" class="banner-editor" data-banner-editor data-image-search-url="{% url 'shop:control_banner_image_search' %}">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="control-message error">{{ form.non_field_errors }}</div>{% endif %}
+    <section class="control-panel form-panel">
+        <div class="panel-heading"><div><span>01</span><h2>Параметры показа</h2></div></div>
+        <div class="form-grid">
+            <label><span>{{ form.image_count.label }}</span>{{ form.image_count }}<small>{{ form.image_count.help_text }}</small>{{ form.image_count.errors }}</label>
+            <label><span>{{ form.interval_seconds.label }}</span>{{ form.interval_seconds }}{{ form.interval_seconds.errors }}</label>
+            <label class="wide banner-checkbox">{{ form.autoplay }} <span>{{ form.autoplay.label }}</span></label>
+            <label class="wide banner-checkbox">{{ form.personalize_by_gender }} <span>{{ form.personalize_by_gender.label }}</span><small>{{ form.personalize_by_gender.help_text }}</small></label>
+        </div>
+    </section>
+    <section class="control-panel form-panel">
+        <div class="panel-heading"><div><span>02</span><h2>Фотографии</h2><p>Порядок фотографий на витрине совпадает с порядком ниже. Можно выбрать фото из каталога или загрузить своё.</p></div><b><span data-media-count>0</span> / 20</b></div>
+        {{ image_formset.management_form }}
+        {% if image_formset.non_form_errors %}<div class="control-message error">{{ image_formset.non_form_errors }}</div>{% endif %}
+        <div class="media-manager" data-media-manager data-media-limit="20" data-banner-media>
+            <div class="media-formset" data-media-list>{% for image_form in image_formset %}{% include 'shop/backoffice/includes/banner_image_row.html' %}{% endfor %}</div>
+            <template data-media-empty>{% include 'shop/backoffice/includes/banner_image_row.html' with image_form=image_formset.empty_form %}</template>
+            <button class="control-button media-add-button" type="button" data-media-add><span>+</span> Добавить ещё фото</button>
+        </div>
+    </section>
+    <div class="banner-editor-actions"><button class="control-button dark" type="submit">Сохранить баннер</button></div>
+</form>
+{% endblock %}

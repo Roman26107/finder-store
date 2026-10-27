@@ -1,0 +1,17 @@
+{% extends 'shop/backoffice/base.html' %}
+{% block title %}Баннеры{% endblock %}
+{% block content %}
+<header class="control-page-heading"><div><span>Оформление витрины</span><h1>Баннеры</h1><p>Настраивайте фотографии, их количество и автоматическую смену.</p></div></header>
+<div class="banner-admin-grid">
+    {% for banner in banners %}
+    <article class="control-panel banner-admin-card">
+        <div class="banner-admin-preview">
+            {% with image=banner.images.all.0 %}{% if image and image.preview_url %}<img src="{{ image.preview_url }}" alt="" loading="lazy" decoding="async">{% else %}<span>Нет фотографии</span>{% endif %}{% endwith %}
+        </div>
+        <div class="panel-heading"><div><span>{{ forloop.counter|stringformat:'02d' }}</span><h2>{{ banner.get_slot_display }}</h2></div><b>{{ banner.images.all|length }} фото</b></div>
+        <dl><div><dt>Показывать</dt><dd>{{ banner.image_count }}</dd></div><div><dt>Смена</dt><dd>{% if banner.autoplay %}каждые {{ banner.interval_seconds }} сек.{% else %}отключена{% endif %}</dd></div><div><dt>Персонализация</dt><dd>{% if banner.personalize_by_gender %}по полу{% else %}не используется{% endif %}</dd></div></dl>
+        <a class="control-button dark" href="{% url 'shop:control_banner_edit' banner.pk %}">Настроить баннер</a>
+    </article>
+    {% endfor %}
+</div>
+{% endblock %}

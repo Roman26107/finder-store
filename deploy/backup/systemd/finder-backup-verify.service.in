@@ -1,0 +1,21 @@
+[Unit]
+Description=Deep-check FINDER Restic repository
+Documentation=file://@PROJECT_DIR@/deploy/backup/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+Environment=FINDER_BACKUP_ENV=/etc/finder/backup.env
+ExecStart=/usr/bin/bash /usr/local/lib/finder-backup/verify.sh
+TimeoutStartSec=infinity
+UMask=0077
+Nice=15
+IOSchedulingClass=idle
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

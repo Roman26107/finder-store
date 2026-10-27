@@ -1,0 +1,26 @@
+{{ traffic_chart|json_script:'analytics-behavior-traffic' }}
+{{ device_chart|json_script:'analytics-behavior-devices' }}
+<section class="analytics-kpis analytics-kpis-five" aria-label="Показатели поведения">
+    <article><small>Посетители</small><b>{{ unique_visitors }}</b><span>Уникальные</span></article>
+    <article><small>Сессии</small><b>{{ session_count }}</b><span>{{ new_sessions }} новых</span></article>
+    <article><small>Страниц / сессию</small><b>{{ pages_per_session }}</b><span>{{ page_views }} просмотров</span></article>
+    <article><small>Среднее время</small><b>{{ avg_duration }} сек</b><span>На сессию</span></article>
+    <article><small>Bounce</small><b>{{ bounce_rate }}%</b><span>Не вовлечены</span></article>
+</section>
+
+<section class="control-panel analytics-chart-panel analytics-chart-wide"><div class="panel-heading"><div><span>Динамика</span><h2>{% if hourly %}Активность по часам{% else %}Активность по дням{% endif %}</h2></div><div class="chart-legend"><i class="gold"></i>Сессии <i class="dark"></i>Просмотры <i class="green"></i>Лиды</div></div><div class="analytics-chart-wrap line-chart"><canvas data-analytics-chart="line" data-chart-source="analytics-behavior-traffic"></canvas><div class="chart-tooltip" data-chart-tooltip hidden></div></div></section>
+
+<div class="analytics-columns">
+    <section class="control-panel"><div class="panel-heading"><div><span>Навигация</span><h2>Переходы между страницами</h2></div></div><div class="analytics-table"><table><thead><tr><th>Откуда</th><th>Куда</th><th>Переходы</th></tr></thead><tbody>{% for row in transitions|slice:':10' %}<tr><td>{{ row.from_label }}</td><td>{{ row.to_label }}</td><td>{{ row.total }}</td></tr>{% empty %}<tr><td colspan="3">Переходов пока нет.</td></tr>{% endfor %}</tbody></table></div></section>
+    <section class="control-panel"><div class="panel-heading"><div><span>Поведение</span><h2>Scroll depth</h2></div></div><div class="scroll-chart">{% for mark,value in scrolls %}<div><span>{{ mark }}%</span><i><b style="--scroll-height:{% if page_views %}{% widthratio value page_views 100 %}{% else %}0{% endif %}%"></b></i><strong>{{ value }}</strong></div>{% endfor %}</div></section>
+</div>
+
+<div class="analytics-columns">
+    <details class="control-panel analytics-disclosure" open><summary><span>Контент</span><b>Популярные страницы</b><i>Свернуть / раскрыть</i></summary><div class="analytics-table"><table><thead><tr><th>Страница</th><th>Просмотры</th><th>Посетители</th></tr></thead><tbody>{% for row in popular_pages %}<tr><td>{{ row.page_title|default:row.path }}<small>{{ row.path }}</small></td><td>{{ row.views }}</td><td>{{ row.visitors }}</td></tr>{% empty %}<tr><td colspan="3">Нет данных.</td></tr>{% endfor %}</tbody></table></div></details>
+    <details class="control-panel analytics-disclosure"><summary><span>Сессии</span><b>Входные страницы</b><i>Раскрыть →</i></summary><div class="analytics-table"><table><thead><tr><th>Страница</th><th>Сессии</th><th>Посетители</th></tr></thead><tbody>{% for row in landing_pages %}<tr><td>{{ row.landing_page|default:'Не определена' }}</td><td>{{ row.sessions }}</td><td>{{ row.visitors }}</td></tr>{% empty %}<tr><td colspan="3">Нет данных.</td></tr>{% endfor %}</tbody></table></div></details>
+</div>
+
+<div class="analytics-columns">
+    <details class="control-panel analytics-disclosure"><summary><span>Сессии</span><b>Страницы выхода</b><i>Раскрыть →</i></summary><div class="analytics-table"><table><thead><tr><th>Страница</th><th>Выходы</th></tr></thead><tbody>{% for row in exit_pages %}<tr><td>{{ row.page_title|default:row.path }}<small>{{ row.path }}</small></td><td>{{ row.exits }}</td></tr>{% empty %}<tr><td colspan="2">Нет данных.</td></tr>{% endfor %}</tbody></table></div></details>
+    <section class="control-panel analytics-chart-panel"><div class="panel-heading"><div><span>Технологии</span><h2>Устройства</h2></div></div><div class="donut-layout"><div class="analytics-chart-wrap donut-chart"><canvas data-analytics-chart="donut" data-chart-source="analytics-behavior-devices"></canvas><div class="donut-total"><b>{{ session_count }}</b><span>сессий</span></div></div><ul class="chart-key">{% for row in devices %}<li><i style="--key-color:{% cycle '#181715' '#9b7955' '#c9bba9' %}"></i><span>{{ row.label }}</span><b>{{ row.total }}</b></li>{% empty %}<li>Нет данных</li>{% endfor %}</ul></div></section>
+</div>

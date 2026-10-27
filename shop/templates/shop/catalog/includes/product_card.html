@@ -1,0 +1,24 @@
+{% load shop_tags %}
+<article class="product-card hermes-product-card">
+    <div class="product-image-wrap" data-card-gallery>
+        <a class="product-image-link" href="{{ product.get_absolute_url }}" aria-label="Открыть товар: {{ product.title }}" data-analytics-product-click data-product-id="{{ product.pk }}" data-product-sku="{{ product.article }}" data-product-brand="{{ product.brand }}">
+            <span class="product-image-track" data-card-gallery-track>
+                {% with primary=product.primary_image %}{% if primary and primary.card_url %}{% for image in product.images.all %}{% if image.card_url %}<img class="product-image-slide{% if image.pk == primary.pk %} active{% endif %}" src="{{ image.card_url }}" alt="{{ product.title }} — фото {{ forloop.counter }}" loading="lazy" decoding="async" data-card-gallery-image data-card-gallery-slide>{% endif %}{% endfor %}{% else %}<span class="image-placeholder">A</span>{% endif %}{% endwith %}
+            </span>
+        </a>
+        {% if product.images.all|length > 1 %}
+            <button class="card-gallery-arrow card-gallery-prev" type="button" aria-label="Предыдущее фото {{ product.title }}" data-card-gallery-prev><span aria-hidden="true">‹</span></button>
+            <button class="card-gallery-arrow card-gallery-next" type="button" aria-label="Следующее фото {{ product.title }}" data-card-gallery-next><span aria-hidden="true">›</span></button>
+            <div class="card-gallery-dots" aria-label="Фотографии товара">
+                {% with primary=product.primary_image %}{% for image in product.images.all %}{% if image.card_url %}<button class="{% if image.pk == primary.pk %}active{% endif %}" type="button" aria-label="Показать фото {{ forloop.counter }}"{% if image.pk == primary.pk %} aria-current="true"{% endif %} data-card-gallery-dot></button>{% endif %}{% endfor %}{% endwith %}
+            </div>
+        {% endif %}
+        <form class="favorite-form" method="post" action="{% url 'shop:favorite_toggle' product.pk %}" data-favorite-form data-product-id="{{ product.pk }}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="favorite-button{% if product.pk in favorite_ids %} active{% endif %}" type="submit" aria-label="{% if product.pk in favorite_ids %}Удалить из избранного{% else %}Добавить в избранное{% endif %}" aria-pressed="{% if product.pk in favorite_ids %}true{% else %}false{% endif %}" data-favorite-button><svg aria-hidden="true"><use href="#icon-heart"></use></svg></button></form>
+    </div>
+    <div class="product-card-info">
+        {% if brands %}<small class="product-card-brand">{{ product.catalog_brand_name }}</small>{% endif %}
+        <a href="{{ product.get_absolute_url }}" data-analytics-product-click data-product-id="{{ product.pk }}" data-product-sku="{{ product.article }}" data-product-brand="{{ product.brand }}"><h3>{{ product.title }}</h3></a>
+        {% if product.catalog_colors %}<div class="product-card-colors" aria-label="Доступные цвета">{% for color in product.catalog_colors %}<span title="{{ color.name }}" style="--swatch:{{ color.swatch }}"></span>{% endfor %}{% if product.catalog_extra_colors %}<small>+{{ product.catalog_extra_colors }}</small>{% endif %}</div>{% endif %}
+        <p>{% if product.display_price is not None %}{{ product.display_price|money }} ₽{% else %}Цена уточняется{% endif %}</p>
+    </div>
+</article>

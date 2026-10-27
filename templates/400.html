@@ -1,0 +1,10 @@
+{% extends "errors/base.html" %}
+{% block error_code %}400{% endblock %}
+{% block error_heading %}Некорректный<br>запрос{% endblock %}
+{% block error_description %}
+    <p>Сервер не смог обработать запрос. Возможно, ссылка повреждена или в переданных данных есть ошибка.</p>
+{% endblock %}
+{% block error_actions %}
+    <a class="error-button error-button-dark" href="/">На главную <span>→</span></a>
+    <a class="error-button" href="/catalog/">Перейти в каталог</a>
+{% endblock %}

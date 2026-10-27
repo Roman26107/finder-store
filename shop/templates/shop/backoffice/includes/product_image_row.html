@@ -1,0 +1,26 @@
+<article class="media-form-row product-media-row" data-media-row data-existing="{% if image_form.instance.pk %}true{% else %}false{% endif %}">
+    {{ image_form.id }}{{ image_form.ORDER }}
+    <div class="media-row-head">
+        <div><span>Фото <b data-media-number>01</b></span><small data-media-status>{% if image_form.instance.pk %}Сохранено{% else %}Новое{% endif %}</small></div>
+        <div class="media-row-actions">
+            <button type="button" title="Переместить выше" aria-label="Переместить фото выше" data-media-up>↑</button>
+            <button type="button" title="Переместить ниже" aria-label="Переместить фото ниже" data-media-down>↓</button>
+            <button type="button" class="media-remove" data-media-remove>Удалить</button>
+            <button type="button" class="media-restore" data-media-restore hidden>Вернуть</button>
+        </div>
+    </div>
+    <div class="media-row-body">
+        <div class="media-preview" data-media-preview>
+            {% if image_form.instance.pk and image_form.instance.preview_url %}<img src="{{ image_form.instance.preview_url }}" alt="" loading="lazy" decoding="async">
+            {% else %}<span>Выберите фото</span>{% endif %}
+        </div>
+        <label class="media-upload-field">
+            <span>{% if image_form.instance.pk %}Заменить фотографию{% else %}Загрузить фотографию{% endif %}</span>
+            {{ image_form.local_image }}
+            <small>JPG, PNG, WebP или GIF · автоматически WebP до 1600 px</small>
+            {% for error in image_form.local_image.errors %}<em>{{ error }}</em>{% endfor %}
+        </label>
+    </div>
+    <div hidden>{{ image_form.DELETE }}</div>
+    {% for error in image_form.non_field_errors %}<em class="media-row-error">{{ error }}</em>{% endfor %}
+</article>

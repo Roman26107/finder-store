@@ -1,0 +1,46 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block bodyclass %}{{ block.super }} dashboard elane-dashboard{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <section class="elane-admin-welcome">
+        <div>
+            <span class="elane-kicker">FINDER CONTROL CENTER</span>
+            <h1>Панель управления</h1>
+            <p>Управляйте каталогом, покупателями и импортом данных в одном месте.</p>
+        </div>
+        <a class="elane-primary-action" href="{% url 'shop:home' %}">Перейти на витрину <span>↗</span></a>
+    </section>
+
+    <section class="elane-action-grid" aria-label="Быстрые действия">
+        {% if perms.shop.view_order %}<a href="{% url 'admin:shop_order_changelist' %}"><span class="elane-action-icon">▣</span><strong>Заказы</strong><small>Оформленные корзины клиентов</small><i>→</i></a>{% endif %}
+        {% if perms.shop.view_productrequest %}<a href="{% url 'admin:shop_productrequest_changelist' %}"><span class="elane-action-icon">✦</span><strong>Персональные заказы</strong><small>Запросы клиентов на поиск товаров</small><i>→</i></a>{% endif %}
+        {% if perms.shop.view_product %}<a href="{% url 'admin:shop_product_changelist' %}"><span class="elane-action-icon">◇</span><strong>Каталог товаров</strong><small>Просмотр и редактирование карточек</small><i>→</i></a>{% endif %}
+        {% if perms.shop.change_product or perms.shop.change_pricingrule or perms.shop.change_exchangerate %}<a href="{% url 'admin:shop_product_pricing' %}"><span class="elane-action-icon">₽</span><strong>Конструктор стоимости</strong><small>Курсы валют, доставка и надбавки</small><i>→</i></a>{% endif %}
+        {% if perms.shop.add_product %}<a href="{% url 'admin:shop_product_import_zip' %}"><span class="elane-action-icon">⇧</span><strong>Импорт ZIP</strong><small>Загрузка карточек и изображений</small><i>→</i></a>{% endif %}
+        {% if perms.auth.view_user %}<a href="{% url 'admin:auth_user_changelist' %}"><span class="elane-action-icon">○</span><strong>Пользователи</strong><small>Аккаунты и права сотрудников</small><i>→</i></a>{% endif %}
+        {% if perms.shop.view_customerprofile %}<a href="{% url 'admin:shop_customerprofile_changelist' %}"><span class="elane-action-icon">✓</span><strong>Профили</strong><small>Телефоны и подтверждение e-mail</small><i>→</i></a>{% endif %}
+    </section>
+
+    <section class="elane-apps-panel">
+        <div class="elane-section-heading"><h2>Разделы управления</h2><span>Доступны согласно вашим правам</span></div>
+        {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+    </section>
+</div>
+{% endblock %}
+
+{% block sidebar %}
+<aside id="content-related" class="elane-recent-panel">
+    <div class="module" id="recent-actions-module">
+        <h2>Последние действия</h2>
+        <h3>Мои изменения</h3>
+        {% load log %}{% get_admin_log 8 as admin_log for_user user %}
+        {% if not admin_log %}<p class="elane-empty-note">Изменений пока нет.</p>{% else %}
+        <ul class="actionlist">{% for entry in admin_log %}<li class="{% if entry.is_addition %}addlink{% elif entry.is_change %}changelink{% elif entry.is_deletion %}deletelink{% endif %}">{% if entry.is_deletion or not entry.get_admin_url %}{{ entry.object_repr }}{% else %}<a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>{% endif %}<br><span class="mini quiet">{{ entry.content_type.name|capfirst }}</span></li>{% endfor %}</ul>
+        {% endif %}
+    </div>
+</aside>
+{% endblock %}

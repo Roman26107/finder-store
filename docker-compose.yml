@@ -1,0 +1,92 @@
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file: .env.production
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [backend]
+    logging: *default-logging
+
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env.production
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./media:/app/media
+      - ./staticfiles:/app/staticfiles
+      - ./imports:/app/imports
+      - ./backups:/app/backups
+    expose: ["8000"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent -H 'Host: '$$DOMAIN http://127.0.0.1:8000/healthz/"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks: [backend]
+    logging: *default-logging
+
+  nginx:
+    build: ./deploy/nginx
+    restart: unless-stopped
+    env_file: .env.production
+    depends_on:
+      web:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./media:/var/www/media:ro
+      - ./staticfiles:/var/www/static:ro
+      - certbot_www:/var/www/certbot
+      - letsencrypt:/etc/letsencrypt:ro
+    networks: [backend]
+    logging: *default-logging
+
+  certbot:
+    image: certbot/certbot:latest
+    profiles: ["tools"]
+    env_file: .env.production
+    volumes:
+      - certbot_www:/var/www/certbot
+      - letsencrypt:/etc/letsencrypt
+    networks: [backend]
+    logging: *default-logging
+
+  rates:
+    build: .
+    restart: unless-stopped
+    env_file: .env.production
+    depends_on:
+      web:
+        condition: service_healthy
+    entrypoint: []
+    command: ["python", "manage.py", "update_exchange_rates"]
+    networks: [backend]
+    logging: *default-logging
+
+
+volumes:
+  postgres_data:
+  certbot_www:
+  letsencrypt:
+
+networks:
+  backend:
+    driver: bridge

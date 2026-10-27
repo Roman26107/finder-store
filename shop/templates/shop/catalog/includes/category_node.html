@@ -1,0 +1,16 @@
+{% load shop_tags %}
+<div class="hermes-category-node level-{{ level }}{% if selected_category == item.key %} selected{% endif %}">
+    {% if item.children %}<details {% if item.is_open %}open{% endif %}>
+        <summary>
+            <span>{{ item.name }}</span><small>{{ item.count }}</small><i aria-hidden="true"></i>
+        </summary>
+        <div class="hermes-category-children">
+            <a class="hermes-category-all{% if selected_category == item.key %} active{% endif %}" href="?{% querystring category=item.key page=None %}">Смотреть всё</a>
+            {% for child in item.children %}
+                {% include 'shop/catalog/includes/category_node.html' with item=child selected_category=selected_category level=level|add:'1' request=request only %}
+            {% endfor %}
+        </div>
+    </details>{% else %}
+        <a class="hermes-category-link{% if selected_category == item.key %} active{% endif %}" href="?{% querystring category=item.key page=None %}"><span>{{ item.name }}</span><small>{{ item.count }}</small></a>
+    {% endif %}
+</div>

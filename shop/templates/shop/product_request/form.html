@@ -1,0 +1,60 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Найти вещь — FINDER{% endblock %}
+{% block brand_styles %}<link rel="stylesheet" href="{% static 'shop/product_request/product_request.css' %}?v=20260921-2">{% endblock %}
+{% block brand_scripts %}<script src="{% static 'shop/product_request/product_request.js' %}?v=20260921-2" defer></script>{% endblock %}
+
+{% block content %}
+<div class="request-page request-modal-page">
+    <section class="request-dialog" aria-labelledby="request-title">
+        <header class="request-dialog-header">
+            <h1 id="request-title">Найти вещь</h1>
+            <a class="request-dialog-close" href="{% url 'shop:home' %}" aria-label="Закрыть форму">×</a>
+        </header>
+
+        <div class="request-dialog-body">
+            <p class="request-dialog-lead">Расскажите, что вы ищете. Мы найдём вещь в бутиках мира и свяжемся с вами.</p>
+
+            <form method="post" enctype="multipart/form-data" data-request-form novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}<div class="request-form-alert" role="alert">{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+
+                <div class="request-line-field request-query-field{% if form.query.errors %} has-error{% endif %}">
+                    <label for="{{ form.query.id_for_label }}">{{ form.query.label }}</label>
+                    {{ form.query }}
+                    {% for error in form.query.errors %}<small>{{ error }}</small>{% endfor %}
+                </div>
+
+                <div class="request-line-field{% if form.customer_name.errors %} has-error{% endif %}">
+                    <label for="{{ form.customer_name.id_for_label }}">{{ form.customer_name.label }}</label>
+                    {{ form.customer_name }}
+                    {% for error in form.customer_name.errors %}<small>{{ error }}</small>{% endfor %}
+                </div>
+
+                <div class="request-line-field{% if form.contact.errors %} has-error{% endif %}">
+                    <label for="{{ form.contact.id_for_label }}">{{ form.contact.label }}</label>
+                    {{ form.contact }}
+                    {% for error in form.contact.errors %}<small>{{ error }}</small>{% endfor %}
+                </div>
+
+                <div class="request-photo-field{% if form.reference_image.errors %} has-error{% endif %}">
+                    <span>{{ form.reference_image.label }}</span>
+                    {{ form.reference_image }}
+                    <label class="request-photo-button" for="{{ form.reference_image.id_for_label }}">Приложить фото</label>
+                    <small data-request-photo-name>Файл не выбран</small>
+                    {% for error in form.reference_image.errors %}<small class="request-field-error">{{ error }}</small>{% endfor %}
+                </div>
+
+                <div class="request-consent-field{% if form.consent.errors %} has-error{% endif %}">
+                    {{ form.consent }}
+                    <label for="{{ form.consent.id_for_label }}"><span aria-hidden="true"></span>{{ form.consent.label }}</label>
+                    {% for error in form.consent.errors %}<small>{{ error }}</small>{% endfor %}
+                </div>
+
+                <button class="request-submit" type="submit">Отправить запрос</button>
+            </form>
+        </div>
+    </section>
+</div>
+{% endblock %}

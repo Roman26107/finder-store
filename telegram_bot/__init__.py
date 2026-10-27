@@ -1,0 +1,1 @@
+"""Django-интеграция и отдельный worker Telegram-бота FINDER."""

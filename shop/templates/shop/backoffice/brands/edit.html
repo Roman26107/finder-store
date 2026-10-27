@@ -1,0 +1,10 @@
+{% extends 'shop/backoffice/base.html' %}
+{% block title %}{{ brand.name }}{% endblock %}
+{% block content %}
+<header class="control-page-heading heading-actions"><div><a class="back-link" href="{% url 'shop:control_dictionaries' %}#brands">← Справочники</a><h1>{{ brand.name }}</h1><p>Название и изображение бренда для раздела «Бутики».</p></div><a class="control-button" href="{% url 'shop:stores' %}" target="_blank">Открыть бутики ↗</a></header>
+<form method="post" enctype="multipart/form-data" class="control-panel form-panel brand-editor">{% csrf_token %}
+    {% if brand.image %}<div class="brand-image-preview"><img src="{{ brand.image.url }}" alt="{{ brand.name }}" decoding="async"></div>{% endif %}
+    <div class="form-grid">{% for field in form %}<label{% if field.name == 'image' %} class="wide"{% endif %}><span>{{ field.label }}</span>{{ field }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}{% if field.errors %}<em>{{ field.errors|striptags }}</em>{% endif %}</label>{% endfor %}</div>
+    <button class="control-button dark" type="submit">Сохранить бренд</button>
+</form>
+{% endblock %}

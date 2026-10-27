@@ -1,0 +1,79 @@
+{% extends 'shop/base.html' %}
+{% load static shop_tags %}
+
+{% block title %}{{ product.title }} — {{ brand_name }} — FINDER{% endblock %}
+{% block brand_styles %}<link rel="stylesheet" href="{% static 'shop/css/catalog.css' %}?v=20260918-3">{% if brand_stylesheet %}<link rel="stylesheet" href="{% static brand_stylesheet %}?v=20260910-1">{% endif %}{% endblock %}
+{% block brand_scripts %}<script src="{% static 'shop/js/catalog.js' %}?v=20260926-1" defer></script>{% endblock %}
+
+{% block content %}
+<div class="page-width {{ page_class|default:'catalog-page' }}">
+    <nav class="breadcrumbs">
+        <a href="{% url 'shop:home' %}">Главная</a><span>/</span>
+        {% if is_finder_collection %}<a href="{{ catalog_url }}">FINDER COLLECTION</a>{% else %}<a href="{% url 'shop:stores' %}">Бутики</a><span>/</span><a href="{{ catalog_url }}">{{ brand_name }}</a>{% endif %}
+        {% for crumb in category_crumbs %}{% if crumb.key and crumb.name %}<span>/</span><a href="{{ catalog_url }}?category={{ crumb.key|urlencode }}">{{ crumb.name }}</a>{% endif %}{% endfor %}
+        <span>/</span><span>{{ product.title }}</span>
+    </nav>
+    <article class="product-detail hermes-product-detail" data-analytics-product data-product-id="{{ product.pk }}" data-product-sku="{{ product.article }}" data-product-brand="{{ product.brand }}" data-product-category="{{ product.category_path_key }}">
+        <div class="product-gallery" data-detail-gallery>
+            <div class="gallery-thumbs">
+                {% for image in product.images.all %}{% if image.url %}<button type="button" class="gallery-thumb{% if forloop.first %} active{% endif %}" data-gallery-thumb data-image="{{ image.product_page_url }}" data-alt="{{ product.title }}"><img src="{{ image.preview_url }}" alt="{{ product.title }}" loading="lazy" decoding="async"></button>{% endif %}{% endfor %}
+            </div>
+            <div class="gallery-main" data-detail-gallery-track>
+                {% with primary=product.primary_image %}{% if primary and primary.url %}{% for image in product.images.all %}{% if image.url %}<img class="gallery-slide{% if image.pk == primary.pk %} active{% endif %}" src="{{ image.product_page_url }}" alt="{{ product.title }} — фото {{ forloop.counter }}"{% if image.pk == primary.pk %} fetchpriority="high" data-gallery-main{% else %} loading="lazy"{% endif %} decoding="async" data-gallery-slide>{% endif %}{% endfor %}{% else %}<span class="image-placeholder">A</span>{% endif %}{% endwith %}
+                {% if product.images.all|length > 1 %}
+                    <button class="detail-gallery-arrow detail-gallery-prev" type="button" aria-label="Предыдущее фото {{ product.title }}" data-detail-gallery-prev><span aria-hidden="true">‹</span></button>
+                    <button class="detail-gallery-arrow detail-gallery-next" type="button" aria-label="Следующее фото {{ product.title }}" data-detail-gallery-next><span aria-hidden="true">›</span></button>
+                {% endif %}
+            </div>
+            {% if product.images.all|length > 1 %}<div class="detail-gallery-dots" aria-label="Фотографии товара">{% with primary=product.primary_image %}{% for image in product.images.all %}{% if image.url %}<button class="{% if image.pk == primary.pk %}active{% endif %}" type="button" aria-label="Показать фото {{ forloop.counter }} из {{ product.images.all|length }}"{% if image.pk == primary.pk %} aria-current="true"{% endif %} data-detail-gallery-dot></button>{% endif %}{% endfor %}{% endwith %}</div>{% endif %}
+        </div>
+        <div class="product-summary">
+            <p class="hermes-eyebrow">{{ brand_name }}</p>
+            <h1>{{ product.title }}</h1>
+            <p class="detail-article">Артикул: {{ product.article }}</p>
+            <p class="detail-price">{% if product.display_price is not None %}{{ product.display_price|money }} ₽{% else %}Цена уточняется{% endif %}</p>
+            {% if color_options %}
+            <div class="option-block">
+                <p>Цвет: <b>{{ product.current_color|default:color_options.0.color }}</b></p>
+                <div class="variant-colors" data-variant-color-list>
+                    {% for option in color_options %}
+                        {% if option.is_current %}
+                            <span class="variant-color active{% if forloop.counter > 4 %} variant-color-extra{% endif %}" title="{{ option.color }} — текущий цвет"{% if option.thumbnail %} style="background-image:url('{{ option.thumbnail }}')"{% elif option.color_group %} style="background:{{ option.color_group.swatch }}"{% endif %}></span>
+                        {% elif option.url %}
+                            <a class="variant-color{% if forloop.counter > 4 %} variant-color-extra{% endif %}" href="{{ option.url }}" title="{{ option.color }}" aria-label="Выбрать цвет {{ option.color }}"{% if option.thumbnail %} style="background-image:url('{{ option.thumbnail }}')"{% elif option.color_group %} style="background:{{ option.color_group.swatch }}"{% endif %}></a>
+                        {% else %}
+                            <button class="variant-color unavailable{% if forloop.counter > 4 %} variant-color-extra{% endif %}" type="button" disabled title="{{ option.color }}" aria-label="{{ option.color }}"{% if option.thumbnail %} style="background-image:url('{{ option.thumbnail }}')"{% endif %}></button>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% if color_options|length > 4 %}<button class="variant-expand-button" type="button" data-variant-color-toggle aria-expanded="false"><span data-more-text>Показать остальные цвета</span><span data-less-text hidden>Скрыть дополнительные цвета</span><i aria-hidden="true">+</i></button>{% endif %}
+            </div>
+            {% endif %}
+            <form method="post" action="{% url 'shop:cart_add' product.pk %}" class="product-order-form">{% csrf_token %}
+                {% if available_sizes %}
+                <div class="option-block size-option-block">
+                    <div class="size-option-heading"><p>Размер: <b data-selected-size-label>{{ selected_size.size|default:available_sizes.0.size }}</b></p><button type="button" data-size-guide-open>Таблица размеров</button></div>
+                    <div class="size-options" role="radiogroup" aria-label="Выберите размер">
+                        {% for size in available_sizes %}
+                        <label class="size-choice">
+                            <input type="radio" name="size_sku" value="{{ size.sku }}"{% if selected_size.pk == size.pk or not selected_size and forloop.first %} checked{% endif %} data-size-option>
+                            <span>{{ size.size }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                <button class="button button-dark add-to-cart" type="submit" {% if not product.is_available or product.display_price is None %}disabled{% endif %}>{% if product.display_price is None %}Цена уточняется{% elif product.is_available %}Добавить в корзину{% else %}Нет в наличии{% endif %}</button>
+            </form>
+            <form method="post" action="{% url 'shop:favorite_toggle' product.pk %}" data-favorite-form data-product-id="{{ product.pk }}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="button button-outline favorite-wide{% if product.pk in favorite_ids %} active{% endif %}" type="submit" aria-pressed="{% if product.pk in favorite_ids %}true{% else %}false{% endif %}" data-favorite-button><svg aria-hidden="true"><use href="#icon-heart"></use></svg><span data-favorite-label>{% if product.pk in favorite_ids %}Удалить из избранного{% else %}Добавить в избранное{% endif %}</span></button></form>
+            <div class="product-accordions">
+                <details open><summary>Описание</summary><div class="rich-text">{{ product.description|safe }}{% if product.dimensions %}<p>{{ product.dimensions }}</p>{% endif %}{% if product.made_in %}<p>{{ product.made_in }}</p>{% endif %}</div></details>
+                {% if product.product_detail_html or product.care_instruction_html %}<details><summary>Состав и уход</summary><div class="rich-text">{{ product.product_detail_html|safe }}{{ product.care_instruction_html|safe }}</div></details>{% endif %}
+                {% if product.story_behind %}<details><summary>История модели</summary><div class="rich-text">{{ product.story_behind|safe }}</div></details>{% endif %}
+                <details><summary>Доставка и возврат</summary><div class="rich-text"><p>Бесплатная доставка по России. Возврат товара возможен в течение 30 дней.</p></div></details>
+            </div>
+        </div>
+    </article>
+    {% if related %}<section class="section related-products"><div class="section-heading"><h2>Вам может понравиться</h2></div><div class="product-carousel" data-product-carousel><button class="product-carousel-button product-carousel-prev" type="button" aria-label="Предыдущие похожие товары" data-product-carousel-prev><span aria-hidden="true">‹</span></button><div class="product-grid product-grid-four" data-product-carousel-track>{% for product in related %}{% include 'shop/catalog/includes/product_card.html' %}{% endfor %}</div><button class="product-carousel-button product-carousel-next" type="button" aria-label="Следующие похожие товары" data-product-carousel-next><span aria-hidden="true">›</span></button></div></section>{% endif %}
+</div>
+{% endblock %}

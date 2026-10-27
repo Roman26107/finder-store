@@ -1,0 +1,63 @@
+{% extends 'shop/backoffice/base.html' %}
+{% block title %}Обновление каталога{% endblock %}
+{% block content %}
+<div class="catalog-updates-page">
+    <header class="control-page-heading">
+        <div><span>Каталог</span><h1>Обновление цен и наличия</h1><p>Состояние каталога, готовность parser API и история обмена. Проверка источников будет выполняться отдельными партиями по брендам.</p></div>
+        <span class="update-state {% if parser_ready %}ready{% else %}waiting{% endif %}">{% if parser_ready %}API готов{% else %}Требуется настройка{% endif %}</span>
+    </header>
+
+    <section class="update-summary-grid" aria-label="Сводка каталога">
+        <article><span>Товаров</span><strong>{{ product_count }}</strong><small>Опубликовано: {{ published_count }}</small></article>
+        <article class="success"><span>В наличии</span><strong>{{ available_count }}</strong><small>С учётом доступных размеров</small></article>
+        <article class="warning"><span>Нет в наличии</span><strong>{{ unavailable_count }}</strong><small>Среди опубликованных</small></article>
+        <article><span>Изменено за 24 часа</span><strong>{{ changed_24h_count }}</strong><small>Любые изменения карточек</small></article>
+        <article><span>План полного круга</span><strong>{{ total_batches }}</strong><small>Партий максимум по {{ batch_size }} товаров</small></article>
+    </section>
+
+    <div class="update-layout">
+        <section class="control-panel update-brands-panel">
+            <div class="panel-heading"><div><span>Очередь</span><h2>Сводка по брендам</h2><p>Доступность рассчитана по товару и его размерным вариантам.</p></div></div>
+            <div class="control-table-wrap"><table class="control-table update-brand-table">
+                <thead><tr><th>Бренд</th><th>Всего</th><th>Опубликовано</th><th>В наличии</th><th>Нет</th><th>Изменено 24 ч</th><th>Партий</th><th>Последнее изменение</th></tr></thead>
+                <tbody>{% for brand in brand_rows %}<tr>
+                    <td><b>{{ brand.name }}</b><small>{{ brand.brand }}</small></td>
+                    <td>{{ brand.total }}</td><td>{{ brand.published }}</td><td class="update-positive">{{ brand.available }}</td><td class="update-negative">{{ brand.unavailable }}</td><td>{{ brand.changed_24h }}</td><td>{{ brand.batches }}</td><td>{% if brand.last_changed_at %}{{ brand.last_changed_at|date:'d.m.Y H:i' }}{% else %}—{% endif %}</td>
+                </tr>{% empty %}<tr><td colspan="8" class="empty-table">Каталог пока пуст.</td></tr>{% endfor %}</tbody>
+            </table></div>
+        </section>
+
+        <aside class="control-panel update-api-panel">
+            <div class="panel-heading"><div><span>Интеграция</span><h2>Parser API</h2></div></div>
+            <dl class="update-check-list">
+                <div><dt>Конфигурация ключей</dt><dd class="{% if api_configuration_valid %}ok{% else %}bad{% endif %}">{% if api_configuration_valid %}Корректна{% else %}Ошибка JSON{% endif %}</dd></div>
+                <div><dt>Ключ parser</dt><dd class="{% if parser_ready %}ok{% else %}bad{% endif %}">{% if parser_ready %}Настроен{% else %}Не готов{% endif %}</dd></div>
+                <div><dt>Чтение каталога</dt><dd class="{% if parser_read_scope %}ok{% else %}bad{% endif %}">{% if parser_read_scope %}Разрешено{% else %}Нет scope{% endif %}</dd></div>
+                <div><dt>Запись цен и наличия</dt><dd class="{% if parser_write_scope %}ok{% else %}bad{% endif %}">{% if parser_write_scope %}Разрешена{% else %}Нет scope{% endif %}</dd></div>
+                <div><dt>HTTPS</dt><dd>{% if api_requires_https %}Обязателен{% else %}Не требуется локально{% endif %}</dd></div>
+            </dl>
+            <div class="update-endpoint"><span>Bulk endpoint</span><code>POST /api/v1/catalog/commercial/bulk/</code><small>До 100 изменившихся товаров и до 1 MiB за запрос.</small></div>
+        </aside>
+    </div>
+
+    <section class="update-api-metrics">
+        <div class="panel-heading"><div><span>Последние 24 часа</span><h2>Обмен с парсером</h2></div></div>
+        <div>
+            <article><span>Bulk-запросов</span><b>{{ api_metrics.requests|default:0 }}</b></article>
+            <article><span>Успешно</span><b>{{ api_metrics.successful|default:0 }}</b></article>
+            <article><span>С ошибкой</span><b>{{ api_metrics.failed|default:0 }}</b></article>
+            <article><span>Среднее время</span><b>{% if api_metrics.average_duration_ms is not None %}{{ api_metrics.average_duration_ms|floatformat:0 }} мс{% else %}—{% endif %}</b></article>
+            <article><span>Последний bulk</span><b>{% if latest_bulk %}{{ latest_bulk.created_at|date:'d.m H:i' }}{% else %}—{% endif %}</b></article>
+        </div>
+        {% if not latest_parser_request %}<p class="update-empty-state">Парсер ещё не обращался к API. После первого GET или POST здесь появится история.</p>{% elif not latest_bulk %}<p class="update-empty-state">Парсер подключался к API, но обновления цен и наличия ещё не отправлялись.</p>{% endif %}
+    </section>
+
+    <section class="control-panel update-log-panel">
+        <div class="panel-heading"><div><span>Аудит</span><h2>Последние обращения parser</h2><p>Тела запросов и секреты журналом не сохраняются.</p></div></div>
+        <div class="control-table-wrap"><table class="control-table">
+            <thead><tr><th>Дата</th><th>Метод</th><th>Endpoint</th><th>HTTP</th><th>Результат</th><th>Время</th></tr></thead>
+            <tbody>{% for log in recent_parser_logs %}<tr><td>{{ log.created_at|date:'d.m.Y H:i:s' }}</td><td><b>{{ log.method }}</b></td><td><code>{{ log.path }}</code></td><td><span class="api-status {% if log.status_code >= 200 and log.status_code < 300 %}ok{% else %}bad{% endif %}">{{ log.status_code }}</span></td><td>{{ log.result_code|default:'—' }}</td><td>{{ log.duration_ms }} мс</td></tr>{% empty %}<tr><td colspan="6" class="empty-table">Обращений от parser пока нет.</td></tr>{% endfor %}</tbody>
+        </table></div>
+    </section>
+</div>
+{% endblock %}

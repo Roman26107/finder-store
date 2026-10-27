@@ -1,0 +1,34 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Бренды — FINDER{% endblock %}
+
+{% block content %}
+<div class="page-width stores-page">
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'shop:home' %}">Главная</a>
+        <span>/</span>
+        <span>Бутики</span>
+    </nav>
+
+    <header class="stores-header">
+        <h1>Бутики</h1>
+        <p>Выберите бренд, чтобы ознакомиться<br>с его коллекцией.</p>
+    </header>
+
+    <section class="stores-grid" aria-label="Список брендов">
+        {% for brand in brands %}<a class="store-card" href="{{ brand.catalog_url }}" aria-label="Перейти к коллекции {{ brand.name }}">
+            <div class="store-card-visual">
+                {% if brand.image %}<img src="{{ brand.image.url }}" alt="{{ brand.name }}" width="520" height="300">{% elif brand.slug == 'hermes' %}<img src="{% static 'shop/brands/hermes/hermes-logo.svg' %}" alt="Логотип {{ brand.name }}" width="520" height="300">{% elif brand.slug == 'miu-miu' %}<img src="{% static 'shop/brands/miumiu/miumiu-logo.svg' %}" alt="Логотип {{ brand.name }}" width="520" height="300">{% else %}<span class="store-card-placeholder">{{ brand.name }}</span>{% endif %}
+            </div>
+            <div class="store-card-info">
+                <div>
+                    <h2>{{ brand.name }}</h2>
+                    <p>{% if brand.slug == 'hermes' %}Париж, Франция{% elif brand.slug == 'miu-miu' %}Милан, Италия{% else %}Коллекция готовится{% endif %}</p>
+                </div>
+                <span class="store-card-arrow" aria-hidden="true">→</span>
+            </div>
+        </a>{% endfor %}
+    </section>
+</div>
+{% endblock %}

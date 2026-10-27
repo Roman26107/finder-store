@@ -1,0 +1,8 @@
+{% extends 'admin/change_list.html' %}
+{% load i18n %}
+{% block object-tools-items %}
+    {% if perms.shop.change_product or perms.shop.change_pricingrule or perms.shop.change_exchangerate %}<li><a href="{% url 'admin:shop_product_pricing' %}" class="elane-import-link">Конструктор стоимости</a></li>{% endif %}
+    <li><a href="{% url 'admin:shop_product_import_zip' %}" class="elane-import-link">Импорт ZIP</a></li>
+    <li><a href="{% url 'admin:shop_product_import' %}" class="elane-import-link">Импорт JSON</a></li>
+    {{ block.super }}
+{% endblock %}

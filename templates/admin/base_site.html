@@ -1,0 +1,39 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block title %}{{ title }} | FINDER Управление{% endblock %}
+{% block dark-mode-vars %}{% endblock %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'admin/css/elane-admin.css' %}">{% endblock %}
+
+{% block branding %}
+<a class="elane-admin-brand" href="{% url 'admin:index' %}">
+    <span class="elane-admin-logo">FINDER</span>
+    <span class="elane-admin-caption">Управление магазином</span>
+</a>
+{% endblock %}
+
+{% block welcome-msg %}
+<span class="elane-admin-user">{% firstof user.get_full_name user.get_username %}</span>
+{% endblock %}
+
+{% block userlinks %}
+<a class="elane-header-link" href="{% url 'shop:home' %}">Открыть сайт</a>
+<a class="elane-header-link" href="{% url 'shop:account' %}">Мой профиль</a>
+{% if user.has_usable_password %}<a class="elane-header-link" href="{% url 'admin:password_change' %}">Сменить пароль</a>{% endif %}
+<form id="logout-form" method="post" action="{% url 'shop:logout' %}">
+    {% csrf_token %}
+    <button class="elane-header-link" type="submit">Выйти</button>
+</form>
+{% endblock %}
+
+{% block nav-global %}
+<nav class="elane-admin-quicknav" aria-label="Быстрые действия">
+    {% if perms.shop.view_product %}<a href="{% url 'admin:shop_product_changelist' %}">Товары</a>{% endif %}
+    {% if perms.shop.change_product or perms.shop.change_pricingrule or perms.shop.change_exchangerate %}<a href="{% url 'admin:shop_product_pricing' %}">Конструктор стоимости</a>{% endif %}
+    {% if perms.shop.view_order %}<a href="{% url 'admin:shop_order_changelist' %}">Заказы</a>{% endif %}
+    {% if perms.shop.view_productrequest %}<a href="{% url 'admin:shop_productrequest_changelist' %}">Персональные заказы</a>{% endif %}
+    {% if perms.shop.add_product %}<a href="{% url 'admin:shop_product_add' %}">Добавить товар</a>{% endif %}
+    {% if perms.shop.add_product %}<a href="{% url 'admin:shop_product_import_zip' %}">Импорт ZIP</a>{% endif %}
+    {% if perms.auth.view_user %}<a href="{% url 'admin:auth_user_changelist' %}">Пользователи</a>{% endif %}
+</nav>
+{% endblock %}

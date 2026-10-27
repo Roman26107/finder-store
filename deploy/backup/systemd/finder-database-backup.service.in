@@ -1,0 +1,23 @@
+[Unit]
+Description=FINDER frequent PostgreSQL backup to Timeweb S3
+Documentation=file://@PROJECT_DIR@/deploy/backup/README.md
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+Environment=FINDER_BACKUP_ENV=/etc/finder/backup.env
+ExecStart=/usr/bin/bash /usr/local/lib/finder-backup/database-backup.sh
+TimeoutStartSec=infinity
+UMask=0077
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

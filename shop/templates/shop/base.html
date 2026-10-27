@@ -1,0 +1,131 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="FINDER — современная одежда, сумки и аксессуары из бутиков мира">
+    <title>{% block title %}FINDER{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'shop/css/store.css' %}?v=20260921-2">
+    {% block brand_styles %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'shop/css/forms.css' %}?v=20260921-2">
+    <link rel="stylesheet" href="{% static 'shop/css/finder-theme.css' %}?v=20260930-4">
+    <script src="{% static 'shop/js/store.js' %}?v=20260930-2" defer></script>
+    <script src="{% static 'shop/js/analytics.js' %}?v=20260926-2" defer></script>
+    {% block brand_scripts %}{% endblock %}
+</head>
+<body class="finder-storefront" data-analytics-endpoint="{% url 'shop:analytics_event' %}" data-analytics-csrf="{{ csrf_token }}">
+    <header class="site-header">
+        <div class="header-inner page-width">
+            <button class="icon-button mobile-menu-button" type="button" aria-label="Открыть меню" aria-expanded="false" data-menu-button>
+                <svg aria-hidden="true"><use href="#icon-menu"></use></svg>
+            </button>
+            <a class="logo" href="{% url 'shop:home' %}">FINDER</a>
+            <nav class="main-nav" aria-label="Основная навигация" data-main-nav>
+                <a href="{% url 'shop:catalog' %}?gender=men"{% if request.resolver_match.url_name == 'catalog' and request.GET.gender == 'men' %} class="active" aria-current="page"{% endif %} data-mega-trigger="men">Мужское</a>
+                <a href="{% url 'shop:catalog' %}?gender=women"{% if request.resolver_match.url_name == 'catalog' and request.GET.gender == 'women' %} class="active" aria-current="page"{% endif %} data-mega-trigger="women">Женское</a>
+                <a href="{% url 'shop:catalog' %}?category=accessories"{% if request.resolver_match.url_name == 'catalog' and request.GET.category == 'accessories' %} class="active" aria-current="page"{% endif %} data-mega-trigger="accessories">Аксессуары</a>
+                <a href="{% url 'shop:catalog' %}?collection=new"{% if request.resolver_match.url_name == 'catalog' and request.GET.collection == 'new' %} class="active" aria-current="page"{% endif %}>Новинки</a>
+                <a class="nav-collection-link{% if request.resolver_match.url_name == 'collection' or is_finder_collection %} active{% endif %}" href="{% url 'shop:collection' %}"{% if request.resolver_match.url_name == 'collection' or is_finder_collection %} aria-current="page"{% endif %}>Collection</a>
+                <a class="nav-order-link{% if request.resolver_match.url_name == 'product_request_create' %} active{% endif %}" href="{% url 'shop:product_request_create' %}"{% if request.resolver_match.url_name == 'product_request_create' %} aria-current="page"{% endif %}>Найти вещь</a>
+            </nav>
+            <div class="header-actions">
+                <button class="icon-button search-button" type="button" aria-label="Поиск" data-search-button>
+                    <svg aria-hidden="true"><use href="#icon-search"></use></svg>
+                </button>
+                <a class="icon-button cart-link" href="{% url 'shop:cart' %}" aria-label="Ваши вещи, товаров в корзине: {{ cart_count }}" aria-haspopup="dialog" aria-controls="things-panel" data-things-open="cart">
+                    <svg aria-hidden="true"><use href="#icon-bag"></use></svg>
+                    {% if cart_count %}<span class="cart-badge">{{ cart_count }}</span>{% endif %}
+                </a>
+                <div class="account-menu-shell" data-account-menu>
+                    <button class="icon-button account-link{% if request.user.is_authenticated %} authenticated{% endif %}" type="button" aria-label="{% if request.user.is_authenticated %}Меню пользователя: {{ request.user.get_full_name|default:request.user.username }}{% else %}Войти или зарегистрироваться{% endif %}" aria-haspopup="true" aria-controls="account-popover" aria-expanded="false" data-account-button data-account-url="{% if request.user.is_authenticated %}{% url 'shop:account' %}{% else %}{% url 'shop:login' %}{% endif %}"{% if request.resolver_match.url_name == 'account' or request.resolver_match.url_name == 'account_password' or request.resolver_match.url_name == 'verify_email' or request.resolver_match.url_name == 'login' or request.resolver_match.url_name == 'register' or request.resolver_match.url_name == 'orders' or request.resolver_match.url_name == 'product_request_list' or request.resolver_match.url_name == 'product_request_detail' or request.resolver_match.url_name == 'order_detail' or request.resolver_match.url_name == 'order_success' or request.resolver_match.url_name == 'checkout' %} aria-current="page"{% endif %}>
+                        <svg aria-hidden="true"><use href="#icon-user"></use></svg>
+                        {% if request.user.is_authenticated %}<span class="account-status" aria-hidden="true"></span>{% endif %}
+                    </button>
+                    <div class="account-popover" id="account-popover" data-account-popover hidden>
+                        {% if request.user.is_authenticated %}
+                            <div class="account-popover-identity"><span>Ваш аккаунт</span><b>{{ request.user.get_full_name|default:request.user.username }}</b>{% if request.user.email %}<small>{{ request.user.email }}</small>{% endif %}</div>
+                            <nav aria-label="Меню пользователя">
+                                <a href="{% url 'shop:account' %}?tab=profile">Личные данные <span>→</span></a>
+                                <a href="{% url 'shop:orders' %}">Мои заказы <span>→</span></a>
+                                <a href="{% url 'shop:product_request_list' %}">Персональные заказы <span>→</span></a>
+                            </nav>
+                            <form method="post" action="{% url 'shop:logout' %}">{% csrf_token %}<button type="submit">Выйти</button></form>
+                        {% else %}
+                            <div class="account-popover-identity"><span>Личный кабинет</span><b>Добро пожаловать</b><small>Войдите, чтобы сохранять покупки и управлять заказами.</small></div>
+                            <a class="button button-dark account-popover-primary" href="{% url 'shop:login' %}">Войти</a>
+                            <a class="account-popover-register" href="{% url 'shop:register' %}">Создать аккаунт</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mega-menu" data-mega-menu hidden>
+            <div class="mega-menu-inner page-width">
+                <div role="group" aria-label="Женская коллекция" data-mega-panel="women" hidden>
+                    <div><span>Женская коллекция</span><h2>Новое прочтение<br>современной классики</h2></div>
+                    <nav aria-label="Женские категории"><a href="{% url 'shop:catalog' %}?gender=women">Смотреть всё</a><a href="{% url 'shop:catalog' %}?gender=women&amp;category=women/clothing">Одежда</a><a href="{% url 'shop:catalog' %}?gender=women&amp;category=women/bags">Сумки</a><a href="{% url 'shop:catalog' %}?gender=women&amp;category=women/shoes">Обувь</a></nav>
+                </div>
+                <div role="group" aria-label="Мужская коллекция" data-mega-panel="men" hidden>
+                    <div><span>Мужская коллекция</span><h2>Точная форма<br>и безупречные детали</h2></div>
+                    <nav aria-label="Мужские категории"><a href="{% url 'shop:catalog' %}?gender=men">Смотреть всё</a><a href="{% url 'shop:catalog' %}?gender=men&amp;category=men/clothing">Одежда</a><a href="{% url 'shop:catalog' %}?gender=men&amp;category=men/shoes">Обувь</a><a href="{% url 'shop:catalog' %}?gender=men&amp;category=men/accessories">Аксессуары</a></nav>
+                </div>
+                <div role="group" aria-label="Аксессуары" data-mega-panel="accessories" hidden>
+                    <div><span>Завершающий штрих</span><h2>Вещи, которые<br>собирают образ</h2></div>
+                    <nav aria-label="Категории аксессуаров"><a href="{% url 'shop:catalog' %}?category=accessories">Смотреть всё</a><a href="{% url 'shop:catalog' %}?category=women/bags">Сумки</a><a href="{% url 'shop:catalog' %}?category=women/accessories">Женские аксессуары</a><a href="{% url 'shop:catalog' %}?category=men/accessories">Мужские аксессуары</a></nav>
+                </div>
+            </div>
+        </div>
+        <form class="search-panel" action="{% url 'shop:catalog' %}" method="get" data-search-panel hidden>
+            <div class="page-width search-panel-inner">
+                <svg aria-hidden="true"><use href="#icon-search"></use></svg>
+                <input type="search" name="q" placeholder="Бренд, вещь, категория" aria-label="Поиск по каталогу" autofocus>
+                <button class="text-button" type="submit">Найти</button>
+                <button class="icon-button" type="button" aria-label="Закрыть поиск" data-search-close>×</button>
+            </div>
+        </form>
+    </header>
+
+    <div class="things-scrim" data-things-scrim hidden></div>
+    <aside class="things-panel" id="things-panel" aria-label="Ваши вещи" aria-hidden="true" data-things-panel data-endpoint="{% url 'shop:things_panel' %}">
+        <header class="things-panel-head"><h2>Ваши вещи</h2><button class="icon-button" type="button" aria-label="Закрыть" data-things-close>×</button></header>
+        <div class="things-panel-tabs" role="tablist" aria-label="Корзина и избранное">
+            <button type="button" role="tab" aria-selected="true" data-things-tab="cart">Корзина{% if cart_count %} <span>{{ cart_count }}</span>{% endif %}</button>
+            <button type="button" role="tab" aria-selected="false" data-things-tab="favorites">Избранное{% if favorite_count %} <span>{{ favorite_count }}</span>{% endif %}</button>
+        </div>
+        <div class="things-panel-body" data-things-body><div class="things-loading">Загрузка…</div></div>
+    </aside>
+
+    <dialog class="finder-dialog size-guide-dialog" data-size-guide-dialog aria-labelledby="size-guide-title">
+        <header><div><span>Помощь с выбором</span><h2 id="size-guide-title">Таблица размеров</h2></div><button class="icon-button" type="button" aria-label="Закрыть" data-dialog-close>×</button></header>
+        <div class="finder-dialog-body"><div class="size-guide-scroll"><table><thead><tr><th>Размер</th><th>RU</th><th>Грудь</th><th>Талия</th><th>Бёдра</th></tr></thead><tbody><tr><td>XS</td><td>40</td><td>80</td><td>62</td><td>88</td></tr><tr><td>S</td><td>42</td><td>84</td><td>66</td><td>92</td></tr><tr><td>M</td><td>44</td><td>88</td><td>70</td><td>96</td></tr><tr><td>L</td><td>46</td><td>92</td><td>74</td><td>100</td></tr></tbody></table></div><p>Мерки указаны в сантиметрах и являются ориентировочными. Посадка зависит от бренда.</p><a class="button button-outline" href="{% url 'shop:product_request_create' %}">Спросить стилиста</a></div>
+    </dialog>
+
+    {% if messages %}
+        <div class="messages page-width" aria-live="polite" data-messages>
+            {% for message in messages %}<div class="message message-{{ message.tags }}" data-message>{{ message }}</div>{% endfor %}
+        </div>
+    {% endif %}
+
+    <main>{% block content %}{% endblock %}</main>
+
+    <footer class="site-footer" id="footer">
+        <div class="footer-main page-width">
+            <div class="footer-brand"><a class="logo" href="{% url 'shop:home' %}">FINDER</a><p>A world of curated luxury</p><small>© 2026 FINDER. Все права защищены.</small></div>
+            <div class="footer-column"><b>Покупателям</b><a href="{% url 'shop:catalog' %}">Каталог</a><a href="{% url 'shop:product_request_create' %}">Найти вещь</a><a href="{% url 'shop:cart' %}">Корзина</a></div>
+            <div class="footer-column"><b>FINDER</b><a class="footer-boutiques-link" href="{% url 'shop:stores' %}"{% if request.resolver_match.url_name == 'stores' or request.resolver_match.url_name == 'hermes_catalog' or request.resolver_match.url_name == 'miumiu_catalog' or request.resolver_match.url_name == 'brand_catalog' %} aria-current="page"{% endif %}>Бутики</a><a href="{% url 'shop:collection' %}">Collection</a>{% if telegram_public_url %}<a href="{{ telegram_public_url }}" target="_blank" rel="noopener">Telegram ↗</a>{% endif %}</div>
+            <div class="footer-cities" aria-label="Города бутиков">Paris · Milan · London · Dubai · Tokyo · New York</div>
+        </div>
+    </footer>
+
+    <svg class="svg-sprite" aria-hidden="true">
+        <symbol id="icon-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+        <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></symbol>
+        <symbol id="icon-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.7-4 3-6 7-6s6.3 2 7 6"/></symbol>
+        <symbol id="icon-bag" viewBox="0 0 24 24"><path d="M5 8h14l-1 13H6L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></symbol>
+        <symbol id="icon-heart" viewBox="0 0 24 24"><path d="M20.8 5.8c-1.8-1.8-4.7-1.8-6.5 0L12 8.1 9.7 5.8a4.6 4.6 0 0 0-6.5 6.5L12 21l8.8-8.7a4.6 4.6 0 0 0 0-6.5Z"/></symbol>
+        <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+        <symbol id="icon-telegram" viewBox="0 0 24 24"><path d="m3.8 11.5 15.9-6.1c.8-.3 1.5.2 1.2 1.5l-2.7 12.5c-.2.9-.8 1.1-1.6.7l-4.1-3-2 1.9c-.2.2-.4.4-.8.4l.3-4.2 7.7-7c.3-.3-.1-.5-.5-.2l-9.5 6-4.1-1.3c-.9-.3-.9-.9.2-1.2Z"/></symbol>
+    </svg>
+</body>
+</html>

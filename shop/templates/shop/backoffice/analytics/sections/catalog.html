@@ -1,0 +1,31 @@
+{% load shop_tags %}
+<section class="analytics-kpis analytics-kpis-five" aria-label="Показатели каталога">
+    <article><small>Просмотры каталога</small><b>{{ catalog_view_count }}</b><span>Категории и бренды</span></article>
+    <article><small>Карточки</small><b>{{ event_counts.product_view|default:0 }}</b><span>Просмотры товаров</span></article>
+    <article><small>В корзину</small><b>{{ cart_add_count }}</b><span>Добавления</span></article>
+    <article><small>Заказы</small><b>{{ order_count }}</b><span>Оплаченные</span></article>
+    <article><small>CR</small><b>{{ order_cr }}%</b><span>Оплаты / посетители</span></article>
+</section>
+
+<div class="analytics-columns analytics-catalog-lead">
+    <section class="control-panel"><div class="panel-heading"><div><span>E-commerce</span><h2>Воронка каталога</h2><p>Каталог → Карточка → Корзина → Checkout → Покупка</p></div></div><ol class="analytics-funnel visual-funnel">{% for row in catalog_funnel %}<li><div><span>{{ row.label }}</span><b>{{ row.value }}</b></div><i style="--funnel-width:{{ row.percent }}%"></i></li>{% endfor %}</ol></section>
+    <section class="control-panel catalog-health"><div class="panel-heading"><div><span>Состояние каталога</span><h2>Данные и наличие</h2></div></div><dl class="economics-grid"><div><dt>Товаров</dt><dd>{{ catalog_product_count }}</dd></div><div><dt>Опубликовано</dt><dd>{{ catalog_active_count }}</dd></div><div><dt>В наличии</dt><dd>{{ catalog_in_stock_count }}</dd></div><div><dt>Нет в наличии</dt><dd>{{ catalog_out_of_stock_count }}</dd></div><div><dt>Данные устарели</dt><dd>{{ catalog_stale_count }}</dd></div><div><dt>Последняя синхронизация</dt><dd>{% if last_catalog_sync %}{{ last_catalog_sync|date:'d.m H:i' }}{% else %}—{% endif %}</dd></div></dl><p class="analytics-note">ProductShelf/Channel3 API пока не подключён — квота запросов не рассчитывается.</p></section>
+</div>
+
+<div class="analytics-ranking-grid">
+    <section class="control-panel analytics-top-list"><div class="panel-heading"><div><span>Рейтинг</span><h2>Топ товаров</h2></div></div><ol>{% for row in top_products|slice:':10' %}<li><a href="{% url 'shop:control_product_edit' row.product_id %}">{{ row.product__title }}</a><b>{{ row.views }}</b></li>{% empty %}<li class="empty-note">Нет данных</li>{% endfor %}</ol></section>
+    <section class="control-panel analytics-top-list"><div class="panel-heading"><div><span>Рейтинг</span><h2>Топ брендов</h2></div></div><ol>{% for row in top_brands|slice:':10' %}<li><span>{{ row.brand }}</span><b>{{ row.views }}</b></li>{% empty %}<li class="empty-note">Нет данных</li>{% endfor %}</ol></section>
+    <section class="control-panel analytics-top-list"><div class="panel-heading"><div><span>Потенциал</span><h2>Смотрят, но не покупают</h2></div></div><ol>{% for product in lost_products|slice:':10' %}<li><a href="{% url 'shop:control_product_edit' product.pk %}">{{ product.title }}</a><b>{{ product.views }}</b></li>{% empty %}<li class="empty-note">Нет данных</li>{% endfor %}</ol></section>
+</div>
+
+<section class="control-panel">
+    <div class="panel-heading"><div><span>Спрос</span><h2>Внутренний поиск</h2><p>Что ищут, находят и покупают посетители.</p></div></div>
+    <div class="analytics-table"><table data-sortable-table><thead><tr><th>Запрос</th><th>Поисков</th><th>Результатов</th><th>Клики</th><th>CTR</th><th>Продажи</th><th>CR</th></tr></thead><tbody>{% for row in search_report|slice:':15' %}<tr{% if not row.metadata__result_count %} class="analytics-zero-row"{% endif %}><td>{{ row.metadata__query }}</td><td>{{ row.total }}</td><td>{{ row.metadata__result_count|default:0 }}</td><td>{{ row.clicks }}</td><td>{{ row.click_rate }}%</td><td>{{ row.sales }}</td><td>{{ row.conversion_rate }}%</td></tr>{% empty %}<tr><td colspan="7">Поисковых запросов пока нет.</td></tr>{% endfor %}</tbody></table></div>
+</section>
+
+<div class="analytics-columns">
+    <details class="control-panel analytics-disclosure"><summary><span>Спрос</span><b>Поиски без результатов</b><i>{{ zero_search_report|length }} запросов →</i></summary><div class="analytics-table"><table><thead><tr><th>Запрос</th><th>Поисков</th><th>Пользователей</th></tr></thead><tbody>{% for row in zero_search_report %}<tr><td>{{ row.metadata__query }}</td><td>{{ row.total }}</td><td>{{ row.searchers }}</td></tr>{% empty %}<tr><td colspan="3">Все запросы дали результаты.</td></tr>{% endfor %}</tbody></table></div></details>
+    <details class="control-panel analytics-disclosure"><summary><span>Спрос</span><b>Фильтры и сортировка</b><i>Раскрыть →</i></summary><div class="analytics-table"><table><thead><tr><th>Комбинация фильтров</th><th>Использований</th></tr></thead><tbody>{% for row in filter_usage %}<tr><td>{{ row.label }}</td><td>{{ row.total }}</td></tr>{% empty %}<tr><td colspan="2">Фильтры пока не использовали.</td></tr>{% endfor %}</tbody></table><table><thead><tr><th>Сортировка</th><th>Использований</th></tr></thead><tbody>{% for row in sort_usage %}<tr><td>{{ row.metadata__ordering|default:'По умолчанию' }}</td><td>{{ row.total }}</td></tr>{% empty %}<tr><td colspan="2">Сортировки пока не меняли.</td></tr>{% endfor %}</tbody></table></div></details>
+</div>
+
+<details class="control-panel analytics-disclosure"><summary><span>Коммерция</span><b>Полный отчёт по товарам и брендам</b><i>Раскрыть →</i></summary>{% include 'shop/backoffice/analytics/includes/commerce.html' %}</details>

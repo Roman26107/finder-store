@@ -1,0 +1,40 @@
+{% extends 'shop/base.html' %}
+{% load static shop_tags %}
+{% block title %}Оформление заказа — FINDER{% endblock %}
+{% block brand_styles %}<link rel="stylesheet" href="{% static 'shop/orders/orders.css' %}?v=20260926-1">{% endblock %}
+{% block content %}
+<div class="page-width checkout-page checkout-workspace">
+    <nav class="breadcrumbs"><a href="{% url 'shop:home' %}">Главная</a><span>/</span><a href="{% url 'shop:cart' %}">Корзина</a><span>/</span><span>Оформление заказа</span></nav>
+    <header class="checkout-heading"><h1>Оформление заказа</h1><ol><li class="active" data-checkout-indicator="1"><span>1</span>Контакты</li><li data-checkout-indicator="2"><span>2</span>Доставка</li><li data-checkout-indicator="3"><span>3</span>Оплата и подтверждение</li></ol></header>
+    <form method="post" class="checkout-layout" novalidate data-checkout-steps>{% csrf_token %}
+        <div class="checkout-form">
+            {% if form.non_field_errors %}<div class="checkout-alert" role="alert">{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+            <section class="checkout-section" data-checkout-step="1">
+                <div class="checkout-section-heading"><span>01</span><div><h2>Ваши контакты</h2><p>Менеджер использует их для подтверждения деталей заказа.</p></div></div>
+                {% if request.user.is_authenticated %}<div class="checkout-contacts"><div><span>Имя</span><b>{{ request.user.get_full_name|default:request.user.username }}</b></div><div><span>E-mail</span><b>{{ request.user.email }}</b></div><div><span>Телефон</span><b>{{ profile.phone }}</b></div><div><span>Telegram</span><b>{{ profile.telegram|default:'Не указан' }}</b></div></div><a class="checkout-edit" href="{% url 'shop:account' %}?tab=profile">Изменить данные в профиле</a>{% else %}<div class="checkout-alert"><p>Заполните доставку и подтвердите заказ. Затем войдите или зарегистрируйтесь — заказ создастся автоматически.</p></div>{% endif %}<div class="checkout-step-actions"><button class="button button-dark" type="button" data-checkout-next>Продолжить <span>→</span></button></div>
+            </section>
+            <section class="checkout-section" data-checkout-step="2">
+                <div class="checkout-section-heading"><span>02</span><div><h2>Доставка</h2><p>Выберите сохранённый адрес или укажите новый.</p></div></div>
+                <div class="delivery-methods" role="radiogroup" aria-label="Способ доставки">{% for radio in form.delivery_method %}<label>{{ radio.tag }}<span><b>{{ radio.choice_label }}</b><small>{% if radio.data.value == 'courier' %}Доставка по России{% elif radio.data.value == 'express' %}Ускоренная доставка по России{% else %}Доставка за пределы России{% endif %}</small><strong>{% if radio.data.value == 'courier' %}590 ₽{% elif radio.data.value == 'express' %}1 490 ₽{% else %}3 900 ₽{% endif %}</strong></span></label>{% endfor %}</div>
+                {% if saved_addresses %}<div class="saved-addresses" role="radiogroup" aria-label="Сохранённые адреса">{% for address in saved_addresses %}<label><input type="radio" name="saved_address" value="{{ address.pk }}" data-address-choice data-address-value="{{ address.full_address }}"{% if address.is_default %} checked{% endif %}><span><b>{{ address.label }}</b><small>{{ address.full_address }}</small>{% if address.is_default %}<i>Основной</i>{% endif %}</span></label>{% endfor %}<label><input type="radio" name="saved_address" value=""><span><b>Другой адрес</b><small>Введите адрес вручную</small></span></label></div>{% endif %}
+                <div class="checkout-field{% if form.delivery_address.errors %} has-error{% endif %}"><label for="{{ form.delivery_address.id_for_label }}">{{ form.delivery_address.label }}</label>{{ form.delivery_address }}{% for error in form.delivery_address.errors %}<small>{{ error }}</small>{% endfor %}</div><div class="checkout-step-actions"><button type="button" data-checkout-back>← Назад</button><button class="button button-dark" type="button" data-checkout-next>Продолжить <span>→</span></button></div>
+            </section>
+            <section class="checkout-section" data-checkout-step="3">
+                <div class="checkout-section-heading"><span>03</span><div><h2>Оплата и подтверждение</h2><p>Выберите способ связи и предпочтительный способ оплаты.</p></div></div>
+                <div class="contact-methods{% if form.preferred_contact.errors %} has-error{% endif %}">{% for radio in form.preferred_contact %}<label>{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}</div>{% for error in form.preferred_contact.errors %}<small class="checkout-error">{{ error }}</small>{% endfor %}
+                <div class="payment-methods" role="radiogroup" aria-label="Способ оплаты">{% for radio in form.payment_method %}<label>{{ radio.tag }}<span><b>{{ radio.choice_label }}</b><small>{% if radio.data.value == 'card' %}Оплата онлайн после подтверждения{% elif radio.data.value == 'sbp' %}Оплата по QR-коду{% else %}Оплата курьеру при получении{% endif %}</small></span></label>{% endfor %}</div>
+                <p class="checkout-consent">Оплата сейчас не проводится, платёжные данные не запрашиваются. Условия подтвердит менеджер.</p>
+                <p class="checkout-consent">Нажимая «Подтвердить заказ», вы соглашаетесь с обработкой персональных данных.</p>
+                <div class="checkout-step-actions"><button type="button" data-checkout-back>← Назад</button><button class="button button-dark checkout-submit" type="submit">Подтвердить заказ <span>→</span></button></div>
+            </section>
+        </div>
+        <aside class="checkout-summary" data-cart-total="{{ cart_total }}" data-delivery-courier="590" data-delivery-express="1490" data-delivery-international="3900">
+            <h2>Ваш заказ</h2>
+            <div class="checkout-order-items">{% for item in cart_items %}<article>{% with image=item.product.primary_image %}{% if image and image.preview_url %}<img src="{{ image.preview_url }}" alt="{{ item.product.title }}">{% endif %}{% endwith %}<div><b>{{ item.product.title }}</b><span>{{ item.quantity }} шт.{% if item.selected_size %} · Размер {{ item.selected_size }}{% endif %}</span></div><strong>{{ item.subtotal|money }} ₽</strong></article>{% endfor %}</div>
+            <div class="checkout-promo"><div class="form-field{% if form.promo_code.errors %} has-error{% endif %}"><label for="{{ form.promo_code.id_for_label }}">{{ form.promo_code.label }}</label>{{ form.promo_code }}{% for error in form.promo_code.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div><button class="button button-outline" type="button" data-promo-apply>Применить</button><small data-promo-message>{% if checkout_discount %}Промокод применён{% endif %}</small></div>
+            <div class="checkout-sums"><p><span>Товары</span><b>{{ cart_total|money }} ₽</b></p><p data-discount-row{% if not checkout_discount %} hidden{% endif %}><span>Скидка по промокоду</span><b>−<i data-discount-value>{{ checkout_discount|money }}</i> ₽</b></p><p><span>Доставка</span><b><i data-delivery-value>{{ checkout_delivery|money }}</i> ₽</b></p><p class="total"><span>Итого</span><b><i data-checkout-total>{{ checkout_total|money }}</i> ₽</b></p></div>
+            <p>Финальную стоимость и условия доставки подтвердит ваш личный менеджер.</p><a href="{% url 'shop:cart' %}">Вернуться в корзину</a>
+        </aside>
+    </form>
+</div>
+{% endblock %}

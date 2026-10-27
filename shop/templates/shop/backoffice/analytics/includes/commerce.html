@@ -1,0 +1,24 @@
+{% load shop_tags %}
+<section class="control-panel">
+    <div class="panel-heading"><div><span>Товары</span><h2>Коммерческий отчёт</h2><p>Выручка мультистрочного заказа распределена пропорционально стоимости строк. CR — оплаченные строки на уникального посетителя.</p></div></div>
+    <div class="analytics-table"><table data-sortable-table>
+        <thead><tr><th><button type="button" data-sort-column="0">Товар</button></th><th><button type="button" data-sort-column="1">Артикул</button></th><th><button type="button" data-sort-column="2" data-sort-type="number">Просмотры</button></th><th><button type="button" data-sort-column="3" data-sort-type="number">Посетители</button></th><th><button type="button" data-sort-column="4" data-sort-type="number">Корзина</button></th><th><button type="button" data-sort-column="5" data-sort-type="number">Продажи</button></th><th><button type="button" data-sort-column="6" data-sort-type="number">CR</button></th><th><button type="button" data-sort-column="7" data-sort-type="number">Выручка</button></th><th><button type="button" data-sort-column="8" data-sort-type="number">Валовая прибыль</button></th></tr></thead>
+        <tbody>{% for row in product_report %}<tr><td><a href="{% url 'shop:control_product_edit' row.product_id %}">{{ row.product__title }}</a><small>{{ row.product__brand }}</small></td><td>{{ row.product__sku_without_size }}</td><td>{{ row.views }}</td><td>{{ row.visitors }}</td><td>{{ row.cart_adds }}</td><td>{{ row.orders }}</td><td data-sort-value="{{ row.cr }}">{{ row.cr }}%</td><td data-sort-value="{{ row.revenue }}">{{ row.revenue|money }} ₽</td><td data-sort-value="{{ row.profit|default:0 }}">{% if row.profit is not None %}{{ row.profit|money }} ₽{% else %}—{% endif %}</td></tr>{% empty %}<tr><td colspan="9">Данных по товарам пока нет.</td></tr>{% endfor %}</tbody>
+    </table></div>
+</section>
+
+<section class="control-panel">
+    <div class="panel-heading"><div><span>Бренды</span><h2>Коммерческий отчёт</h2><p>Просмотры, лиды, оплаты и распределённая выручка.</p></div></div>
+    <div class="analytics-table"><table data-sortable-table>
+        <thead><tr><th><button type="button" data-sort-column="0">Бренд</button></th><th><button type="button" data-sort-column="1" data-sort-type="number">Просмотры</button></th><th><button type="button" data-sort-column="2" data-sort-type="number">Посетители</button></th><th><button type="button" data-sort-column="3" data-sort-type="number">Лиды</button></th><th><button type="button" data-sort-column="4" data-sort-type="number">Продажи</button></th><th><button type="button" data-sort-column="5" data-sort-type="number">CR</button></th><th><button type="button" data-sort-column="6" data-sort-type="number">Выручка</button></th><th><button type="button" data-sort-column="7" data-sort-type="number">Валовая прибыль</button></th></tr></thead>
+        <tbody>{% for row in brand_report %}<tr><td>{{ row.brand }}</td><td>{{ row.views }}</td><td>{{ row.visitors }}</td><td>{{ row.leads }}</td><td>{{ row.orders }}</td><td data-sort-value="{{ row.cr }}">{{ row.cr }}%</td><td data-sort-value="{{ row.revenue }}">{{ row.revenue|money }} ₽</td><td data-sort-value="{{ row.profit|default:0 }}">{% if row.profit is not None %}{{ row.profit|money }} ₽{% else %}—{% endif %}</td></tr>{% empty %}<tr><td colspan="8">Данных по брендам пока нет.</td></tr>{% endfor %}</tbody>
+    </table></div>
+</section>
+
+<section class="control-panel">
+    <div class="panel-heading"><div><span>Внутренний поиск</span><h2>Запросы и конверсии</h2><p>Клик — переход к товару в той же сессии; продажа — последующая оплата тем же посетителем.</p></div></div>
+    <div class="analytics-table"><table data-sortable-table>
+        <thead><tr><th><button type="button" data-sort-column="0">Запрос</button></th><th><button type="button" data-sort-column="1" data-sort-type="number">Поисков</button></th><th><button type="button" data-sort-column="2" data-sort-type="number">Результатов</button></th><th><button type="button" data-sort-column="3" data-sort-type="number">Клики</button></th><th><button type="button" data-sort-column="4" data-sort-type="number">CTR</button></th><th><button type="button" data-sort-column="5" data-sort-type="number">Продажи</button></th><th><button type="button" data-sort-column="6" data-sort-type="number">Конверсия</button></th></tr></thead>
+        <tbody>{% for row in search_report %}<tr{% if not row.metadata__result_count %} class="analytics-zero-row"{% endif %}><td>{{ row.metadata__query }}</td><td>{{ row.total }}</td><td>{{ row.metadata__result_count|default:0 }}</td><td>{{ row.clicks }}</td><td data-sort-value="{{ row.click_rate }}">{{ row.click_rate }}%</td><td>{{ row.sales }}</td><td data-sort-value="{{ row.conversion_rate }}">{{ row.conversion_rate }}%</td></tr>{% empty %}<tr><td colspan="7">Поисковых запросов пока нет.</td></tr>{% endfor %}</tbody>
+    </table></div>
+</section>

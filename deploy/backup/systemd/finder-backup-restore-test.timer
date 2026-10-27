@@ -1,0 +1,12 @@
+[Unit]
+Description=Test FINDER PostgreSQL restore weekly
+
+[Timer]
+OnCalendar=Sun *-*-* 07:00:00
+RandomizedDelaySec=30m
+AccuracySec=1m
+Persistent=true
+Unit=finder-backup-restore-test.service
+
+[Install]
+WantedBy=timers.target

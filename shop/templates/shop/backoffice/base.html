@@ -1,0 +1,72 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
+    <title>{% block title %}Панель управления{% endblock %} — FINDER</title>
+    <link rel="stylesheet" href="{% static 'shop/backoffice/control.css' %}?v=20260930-1">
+    <link rel="stylesheet" href="{% static 'shop/backoffice/forms.css' %}?v=20260916-1">
+    <script src="{% static 'shop/backoffice/control.js' %}?v=20260930-1" defer></script>
+    {% if active_section == 'analytics' %}<script src="{% static 'shop/backoffice/analytics.js' %}?v=20260915-1" defer></script>{% endif %}
+</head>
+<body>
+    <header class="control-mobile-header">
+        <button type="button" aria-label="Открыть меню" aria-expanded="false" data-control-menu>☰</button>
+        <a href="{% url 'shop:control_dashboard' %}">FINDER <small>CONTROL</small></a>
+        <a href="{% url 'shop:home' %}" aria-label="Открыть витрину">↗</a>
+    </header>
+    <aside class="control-sidebar" data-control-sidebar>
+        <div class="control-brand"><a href="{% url 'shop:control_dashboard' %}">FINDER</a><span>CONTROL CENTER</span></div>
+        <nav aria-label="Разделы управления">
+            <small>Рабочее пространство</small>
+            <a class="{% if active_section == 'dashboard' %}active{% endif %}" href="{% url 'shop:control_dashboard' %}"><i>⌂</i><span>Обзор</span></a>
+            {% if perms.shop.view_order %}<a class="{% if active_section == 'orders' %}active{% endif %}" href="{% url 'shop:control_orders' %}"><i>▣</i><span>Заказы</span></a>{% endif %}
+            {% if perms.shop.view_productrequest %}<a class="{% if active_section == 'requests' %}active{% endif %}" href="{% url 'shop:control_requests' %}"><i>✦</i><span>Заявки клиентов</span></a>{% endif %}
+            {% if perms.auth.view_user %}<a class="{% if active_section == 'users' %}active{% endif %}" href="{% url 'shop:control_users' %}"><i>◎</i><span>Пользователи</span></a>{% endif %}
+            {% if perms.telegram_bot.view_telegramaccount %}<a class="{% if active_section == 'telegram' %}active{% endif %}" href="{% url 'shop:control_telegram_accounts' %}"><i>✈</i><span>Telegram</span></a>{% endif %}
+            {% if perms.telegram_bot.view_managercontact %}<a class="{% if active_section == 'manager_contacts' %}active{% endif %}" href="{% url 'shop:control_manager_contacts' %}"><i>☎</i><span>Способы связи</span></a>{% endif %}
+            {% if perms.shop.view_product %}<a class="{% if active_section == 'products' %}active{% endif %}" href="{% url 'shop:control_products' %}"><i>◇</i><span>Основной каталог</span></a>{% endif %}
+            {% if perms.shop.view_product %}<a class="{% if active_section == 'collection' %}active{% endif %}" href="{% url 'shop:control_collection' %}"><i>◆</i><span>COLLECTION</span></a>{% endif %}
+            {% if perms.shop.change_banner %}<a class="{% if active_section == 'banners' %}active{% endif %}" href="{% url 'shop:control_banners' %}"><i>▧</i><span>Баннеры</span></a>{% endif %}
+            {% if perms.shop.change_weeklylook %}<a class="{% if active_section == 'weekly_look' %}active{% endif %}" href="{% url 'shop:control_weekly_look' %}"><i>✧</i><span>Образ недели</span></a>{% endif %}
+            {% if perms.shop.change_product %}<a class="{% if active_section == 'dictionaries' %}active{% endif %}" href="{% url 'shop:control_dictionaries' %}"><i>＋</i><span>Справочники</span></a>{% endif %}
+            {% if perms.shop.view_analyticssession %}
+                <details class="control-nav-group"{% if active_section == 'analytics' %} open{% endif %}>
+                <summary><i>◫</i><span>Аналитика</span><b aria-hidden="true">⌄</b></summary>
+                <div class="control-nav-children">
+                <a class="{% if active_section == 'analytics' and analytics_section == 'overview' %}active{% endif %}" href="{% url 'shop:control_analytics' %}{% if analytics_query %}?{{ analytics_query }}{% endif %}"><i>⌂</i><span>Обзор</span></a>
+                <a class="{% if analytics_section == 'marketing' %}active{% endif %}" href="{% url 'shop:control_analytics_marketing' %}{% if analytics_query %}?{{ analytics_query }}{% endif %}"><i>↗</i><span>Маркетинг</span></a>
+                <a class="{% if analytics_section == 'catalog' %}active{% endif %}" href="{% url 'shop:control_analytics_catalog' %}{% if analytics_query %}?{{ analytics_query }}{% endif %}"><i>▦</i><span>Каталог</span></a>
+                <a class="{% if analytics_section == 'behavior' %}active{% endif %}" href="{% url 'shop:control_analytics_behavior' %}{% if analytics_query %}?{{ analytics_query }}{% endif %}"><i>◎</i><span>Поведение</span></a>
+                <a class="{% if analytics_section == 'sales' %}active{% endif %}" href="{% url 'shop:control_analytics_sales' %}{% if analytics_query %}?{{ analytics_query }}{% endif %}"><i>♢</i><span>Продажи и CRM</span></a>
+                <a class="{% if analytics_section == 'finance' %}active{% endif %}" href="{% url 'shop:control_analytics_finance' %}{% if analytics_query %}?{{ analytics_query }}{% endif %}"><i>₽</i><span>Финансы</span></a>
+                </div></details>
+            {% endif %}
+            {% if perms.shop.add_product %}<a class="{% if active_section == 'import' %}active{% endif %}" href="{% url 'shop:control_import' %}"><i>⇧</i><span>Импорт</span></a>{% endif %}
+            {% if perms.shop.view_product %}<a class="{% if active_section == 'updates' %}active{% endif %}" href="{% url 'shop:control_catalog_updates' %}"><i>↻</i><span>Обновление</span></a>{% endif %}
+            {% if perms.shop.change_product or perms.shop.change_pricingrule or perms.shop.change_exchangerate %}<a class="{% if active_section == 'pricing' %}active{% endif %}" href="{% url 'shop:control_pricing' %}"><i>₽</i><span>Стоимость</span></a>{% endif %}
+            {% if request.user.is_superuser %}
+                <small>Система</small>
+                <a class="{% if active_section == 'errors' %}active{% endif %}" href="{% url 'shop:control_error_logs' %}"><i>!</i><span>Журнал ошибок</span></a>
+                <a href="{% url 'admin:index' %}"><i>⚙</i><span>Технический раздел</span></a>
+            {% endif %}
+        </nav>
+        <div class="control-user">
+            <span>{{ request.user.get_full_name|default:request.user.username }}</span>
+            <small>{% if request.user.is_superuser %}Администратор{% else %}Сотрудник{% endif %}</small>
+            <form method="post" action="{% url 'shop:logout' %}">{% csrf_token %}<button type="submit">Выйти</button></form>
+        </div>
+    </aside>
+    <div class="control-overlay" data-control-overlay></div>
+    <main class="control-main">
+        <div class="control-topbar">
+            <div><span>{% now 'd.m.Y' %}</span></div>
+            <a href="{% url 'shop:home' %}" target="_blank" rel="noopener">Открыть витрину <b>↗</b></a>
+        </div>
+        {% if messages %}<div class="control-messages" aria-live="polite" data-control-messages>{% for message in messages %}<div class="control-message {{ message.tags }}" data-control-message>{{ message }}</div>{% endfor %}</div>{% endif %}
+        <div class="control-content">{% block content %}{% endblock %}</div>
+    </main>
+</body>
+</html>

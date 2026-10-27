@@ -1,0 +1,25 @@
+{% extends 'shop/base.html' %}
+{% load static shop_tags %}
+
+{% block title %}{{ order.number }} — FINDER{% endblock %}
+{% block brand_styles %}<link rel="stylesheet" href="{% static 'shop/orders/orders.css' %}?v=20260926-1">{% endblock %}
+
+{% block content %}
+<div class="page-width order-detail-page">
+    <nav class="breadcrumbs"><a href="{% url 'shop:home' %}">Главная</a><span>/</span><a href="{% url 'shop:orders' %}">Мои заказы</a><span>/</span><span>{{ order.number }}</span></nav>
+    <header class="order-detail-heading"><div><p class="order-kicker">Заказ из корзины</p><h1>{{ order.number }}</h1><span>от {{ order.created_at|date:'d.m.Y, H:i' }}</span></div><b class="order-status status-{{ order.status }}">{{ order.get_status_display }}</b></header>
+    <div class="order-detail-grid">
+        <section class="order-detail-items">
+            <h2>Состав заказа</h2>
+            {% for item in order.items.all %}<article><span>{{ forloop.counter|stringformat:'02d' }}</span><div><small>{{ item.brand }}</small><h3>{{ item.product_title }}</h3><p>{{ item.quantity }} шт. · {{ item.unit_price|money }} {{ item.currency|currency_symbol }}{% if item.color %} · Цвет: {{ item.color }}{% endif %}{% if item.size %} · Размер: {{ item.size }}{% endif %}</p></div></article>{% endfor %}
+            {% if order.discount_amount %}<div class="order-detail-breakdown"><span>Скидка{% if order.promo_code %} · {{ order.promo_code }}{% endif %}</span><b>−{{ order.discount_amount|money }} ₽</b></div>{% endif %}{% if order.delivery_method %}<div class="order-detail-breakdown"><span>{{ order.get_delivery_method_display }}</span><b>{{ order.delivery_cost|money }} ₽</b></div>{% endif %}<div class="order-detail-total"><span>Предварительная стоимость</span><b>{{ order.estimated_total|money }} {{ order.currency|currency_symbol }}</b></div>
+        </section>
+        <aside class="order-detail-side">
+            <div><h2>Доставка и контакты</h2><p>{{ order.customer_name }}</p><a href="mailto:{{ order.customer_email }}">{{ order.customer_email }}</a><a href="tel:{{ order.customer_phone }}">{{ order.customer_phone }}</a>{% if order.customer_telegram %}<span>{{ order.customer_telegram }}</span>{% endif %}<hr><b>Адрес доставки</b><p>{{ order.delivery_address|linebreaksbr }}</p>{% if order.delivery_method %}<b>Тариф доставки</b><p>{{ order.get_delivery_method_display }}</p>{% endif %}{% if order.payment_method %}<b>Способ оплаты</b><p>{{ order.get_payment_method_display }}</p>{% endif %}<b>Способ связи</b><p>{{ order.get_preferred_contact_display }}</p></div>
+            <p>Стоимость является предварительной. Финальную сумму и условия подтвердит личный менеджер.</p>
+            <form method="post" action="{% url 'shop:order_repeat' order.pk %}">{% csrf_token %}<button class="button button-dark" type="submit">Повторить заказ</button></form>
+            <a class="button button-outline" href="{% url 'shop:orders' %}">Все мои заказы</a>
+        </aside>
+    </div>
+</div>
+{% endblock %}
