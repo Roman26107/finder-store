@@ -1,7 +1,6 @@
 import hashlib
 import ipaddress
 import logging
-import time
 from urllib.parse import urlencode
 
 from django.conf import settings

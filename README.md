@@ -73,6 +73,8 @@ bash deploy/backup/tests/smoke_test.sh
 
 Тесты не требуют production-базы, рабочего Telegram-токена или реального SMTP. Демонстрационные картинки и SQLite создаются локально и исключены из Git.
 
+При push и pull request GitHub Actions запускает тесты, проверку миграций, backup smoke-test и создание демокаталога с пустой базой. Workflow не использует production-секреты и ничего не развёртывает на сервере.
+
 ## Структура
 
 ```text

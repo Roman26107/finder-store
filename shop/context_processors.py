@@ -1,9 +1,9 @@
 import re
 
 from django.conf import settings
-from .availability import available_products
 from django.db.models import Sum
 
+from .availability import available_products
 from .models import CartItem, Favorite, Product
 
 
@@ -48,18 +48,18 @@ def _favorite_ids(request):
 
 
 def cart(request):
-    # Панель управления использует отдельный layout без корзины и избранного.
-    # Не выполняем на каждом её экране несколько ненужных запросов к витрине.
-    if request.resolver_match and request.resolver_match.url_name.startswith('control_'):
+    # Панель управления не использует корзину и избранное.
+    match = request.resolver_match
+    if match and (match.url_name or '').startswith('control_'):
         return {}
-    items = request.session.get('cart', {})
     favorite_ids = _favorite_ids(request)
-    cart_count = sum(int(quantity) for quantity in items.values())
     if request.user.is_authenticated:
         cart_count = (
             CartItem.objects.filter(user=request.user).aggregate(total=Sum('quantity'))['total']
             or 0
         )
+    else:
+        cart_count = sum(int(quantity) for quantity in request.session.get('cart', {}).values())
     return {
         'cart_count': cart_count,
         'favorite_count': len(favorite_ids),

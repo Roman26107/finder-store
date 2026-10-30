@@ -52,8 +52,8 @@ from .forms import (
 )
 from .models import (
     AnalyticsEvent, AnalyticsSession, ApiRequestLog, Banner, BannerImage, CartItem, CatalogBrand,
-    CatalogCategory, CatalogColor, CatalogMaterial, CatalogSize, CollectionBatch,
-    CustomerProfile, ExchangeRate, Favorite, Order, PricingRule, Product,
+    CatalogCategory, CatalogColor, CatalogMaterial, CollectionBatch,
+    CustomerProfile, ExchangeRate, Order, PricingRule, Product,
     ProductImage, ProductRequest, ErrorLog, SecurityChallenge, SizeProfile, WeeklyLook, WeeklyLookItem,
 )
 from .pricing import calculate_price, update_cbr_rates

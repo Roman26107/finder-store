@@ -5,7 +5,6 @@ from time import monotonic
 
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.db.models.query import prefetch_related_objects
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 

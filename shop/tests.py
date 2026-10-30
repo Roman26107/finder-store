@@ -46,7 +46,7 @@ from .management.commands.replace_offwhite_catalog import (
 )
 from .models import (
     AnalyticsEvent, AnalyticsSession, AnalyticsVisitor, Banner, BannerImage,
-    CatalogBrand, CatalogCategory, CatalogColor, CartItem, CatalogMaterial,
+    CatalogBrand, CatalogCategory, CartItem, CatalogMaterial,
     CatalogSize, CollectionBatch, CustomerAddress, CustomerProfile, Favorite,
     MarketingCampaignSpend, Order, PricingRule, Product, ProductImage,
     ProductRequest, ProductRequestItem, SizeProfile, WeeklyLook, WeeklyLookItem,
